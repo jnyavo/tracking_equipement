@@ -26,8 +26,26 @@ exports.login = async (req,res) => {
             }
             else
             {
+                const id = results[0].id;
+
+                // Création du token
+                const token = jwt.sign({id: id},process.env.JWT_SECRET, {
+                    expiresIn : JWT_EXPIRATION
+                });
+
+                const cookieOptions = {
+                    expires: new Date(                          //convertion de jours en millisecondes
+                        Date.now() + process.env.JWT_COOKIE_EXP * 24 * 60 * 60 * 1000
+                        ),
+                    httpOnly = true
+                };
+
+                //creation du cookie
+                res.cookie('jwt',token, cookieOptions);
+                
                 req.session.username = username;
-                res.redirect('/home');
+                res.status(200).redirect('/home');
+                
             }
         });
     } catch (error) {

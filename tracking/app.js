@@ -50,7 +50,7 @@ app.use(cookieParser());
 
 //initialisation de la session
 app.use(session({
-    secret: process.env.SECRET,
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false
 }));
