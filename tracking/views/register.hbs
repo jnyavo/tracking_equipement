@@ -1,0 +1,227 @@
+<!--<?php  session_start();
+    $_SESSION['vide'] = true; 
+    require "modules/verif_bdvide.php";
+    require "modules/database.php";
+
+    if(!verif_bdvide($conn)){
+        header("location: index.php");
+    }
+    
+    ?>
+-->
+<!DOCTYPE html>
+<html lang="en">
+<!-- <?php include "includes/head.php";?> -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tracking des équipements</title>
+    
+    <link rel="stylesheet" href="materialize\css\materialize.css" />
+    <link rel="stylesheet" href="materialize\iconfont\material-icons.css">
+   
+    <link rel="stylesheet" href="fontawesome\css\all.min.css">
+    <link rel="stylesheet" href="css\style.css" />
+   <!-- <link  rel="stylesheet" href="fontawesome\css\bootstrap.min.css">
+    <link  rel="stylesheet" href="css\bootstrap.min.css"> -->
+  
+</head>
+<style>
+    div.container{
+        background-color: rgba(0, 0, 0, 0.3);
+        padding: 50px;
+        border-radius: 10px;
+    }
+</style>
+<body style="background-image: url('img/bg2.jpg');">
+    <div class="container">
+        <div class="row">
+          <!--<?php 
+                include "views/admin/form_admin.php";
+          ?>
+          -->
+<!--<?php 
+$pseudo = "";
+$nom =  "";
+$prenom =  "";
+
+$email =  "";
+
+
+
+//Dans le cas où il s'agit d'un edit
+if (isset($_GET['id'])) {
+    require "modules/database.php";
+  
+    $admin = $conn->query("SELECT * FROM admin WHERE id_user=" . $_GET['id']);
+    $admin = $admin->fetchObject();
+    $user = $conn->query("SELECT * FROM user WHERE id_user=" . $_GET['id']);
+    $user = $user->fetchObject();
+    $pseudo = $user->name;
+    
+
+    $nom = $admin->nom_admin;
+    $prenom = $admin->prenom_admin;
+
+
+    $email = $admin->email_admin;
+ 
+
+    
+    
+  }
+
+
+
+
+?> -->
+<div class="container">
+    <h3 class="center-align">Nouvel Admin</h3>
+    <br>
+    <div class="row">
+    <form class="col s12"  action="/auth/register" method="post" onsubmit="return test();">
+    
+    <!-- Script pour eviter les cases vides et invalides -->
+        <script>
+              function test() {
+                var check = true;
+                if (document.getElementById('username').value.replace(' ', '') == "") {
+                  
+                  document.getElementById('username').className = "validate invalid";
+                  check = false;
+                };
+                
+                if (document.getElementById('password').value.replace(' ', '') == '') {
+
+                  document.getElementById('password').className = 'validate invalid';
+                  check = false;
+                }
+                  
+                
+                
+                if (document.getElementById('password').value != document.getElementById('confirm').value) {
+                  alert('Confirm password invalid');
+                  document.getElementById('confirm').className = 'validate invalid';
+                  check = false;
+                };
+                if (!(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(document.getElementById('email').value))) {
+                  
+                  document.getElementById('email').className = 'validate invalid';
+                  check = false;
+                }
+                if (document.getElementById('nom').value.replace(' ','') == ''){
+                  
+                  document.getElementById('nom').className = 'validate invalid';
+                  check = false;
+                }
+                if (document.getElementById('prenom').value.replace(' ','') == ''){
+                 
+                  document.getElementById('prenom').className = 'validate invalid';
+                  check = false;
+                }
+                  return check;
+
+              }
+            </script>
+            
+            <div class="row">
+            
+                <div class="input-field col s6">
+                    <input id="nom" name="lname" type="text" class="validate" value="{{#if form.lname }}{{form.lname}}{{/if}}">
+                    <label for="nom">Nom</label>
+                </div>
+
+                <div class="input-field col s6">
+                    <input id="prenom" name="fname" type="text" class="validate" value="{{#if form.fname }}{{form.fname}}{{/if}}">
+                    <label for="prenom">Prénom</label>
+                </div>
+            </div>
+            <div class="row">
+              
+                <div class="input-field col s11">
+                    <input id="username" name="username" type="text" class="validate" value="{{#if form.username}}{{form.username}}{{/if}}">
+                    <label for="username">Nom d'utilisateur</label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="input-field col s12">
+                    <input id="email" name="email" type="email" class="validate" value="{{#if form.email }}{{form.email}}{{/if}}">
+                    <label for="email">Email</label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="input-field col s6">
+                    <input id="password" name="password" type="password" class="validate">
+                    <label for="password">Mot de passe</label>
+                </div>
+                <div class="input-field col s6">
+                    <input id="confirm" name="cpassword" type="password" class="validate">
+                    <label for="confirm">Confirmation du mot de passe</label>
+                </div>
+            </div>
+           
+            <div class="row">
+                
+              
+            </div>
+            <div class="row">
+                <div style="color:red"> 
+                    {{#if message }}
+                        {{message}}
+                    {{/if}} 
+                </div>
+             </div>
+            
+                <button name="submit" type="submit" class="btn waves-effect waves-light blue-grey">
+                    Enregistrer
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+<!-- <?php include "includes/maxlength.php"; ?> -->
+<script>
+    document.getElementById("nom").setAttribute('maxlength',"50");
+    document.getElementById("prenom").setAttribute('maxlength',"50");
+/*    try{
+    document.getElementById("id_etudiant").setAttribute('maxlength',"10");
+    } catch(error){}
+*/   
+    document.getElementById("username").setAttribute('maxlength',"25");
+    document.getElementById("email").setAttribute('maxlength',"100");
+/*    try{
+    document.getElementById("town").setAttribute('maxlength',"100");
+    } catch(error){}
+    try{
+    document.getElementById("birth_town").setAttribute('maxlength',"100");
+    } catch(error){}
+    try{
+    document.getElementById("address").setAttribute('maxlength',"100");
+    } catch(error){}
+    try{
+    document.getElementById('tel').setAttribute('maxlength',"18");
+    } catch(error){}
+*/
+
+</script>
+
+
+
+
+        </div> 
+    </div>
+    <!-- <?php include "includes/scripts.php";?> -->
+    <script src="js\jquery-3.4.1.js"></script>
+    <script src="materialize\js\materialize.min.js"></script>
+    <script src="fontawesome\js\all.min.js"></script>
+    <script src="js\main.js"></script>
+    <script>
+    $(document).ready(function(){
+        $('.tabs').tabs();
+        $('.sidenav').sidenav();
+        $('.modal').modal();
+        $('select').formSelect();
+    });
+    </script>
+</body>
+</html>
