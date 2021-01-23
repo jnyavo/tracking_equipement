@@ -26,24 +26,16 @@ exports.login = async (req,res) => {
             }
             else
             {
-                const id = results[0].id;
+                const user = {id: results[0].id, username: username};
 
                 // Création du token
-                const token = jwt.sign({id: id},process.env.JWT_SECRET, {
-                    expiresIn : JWT_EXPIRATION
+                const token = await jwt.sign({ user },process.env.JWT_SECRET, {
+                    expiresIn : process.env.JWT_EXPIRATION
                 });
 
-                const cookieOptions = {
-                    expires: new Date(                          //convertion de jours en millisecondes
-                        Date.now() + process.env.JWT_COOKIE_EXP * 24 * 60 * 60 * 1000
-                        ),
-                    httpOnly = true
-                };
-
-                //creation du cookie
-                res.cookie('jwt',token, cookieOptions);
+               
                 
-                req.session.username = username;
+                req.session.username = username
                 res.status(200).redirect('/home');
                 
             }
@@ -92,5 +84,9 @@ exports.register = async (req,res) => {
     
 };
 
+exports.logout = (req, res) => {
+    req.session.destroy();
+    res.redirect('/');
+};
 
 

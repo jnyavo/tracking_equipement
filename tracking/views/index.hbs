@@ -48,7 +48,7 @@ if(verif_bdvide($conn)){
             </div>
             <div class="col l6 s12 white-text">
                 <h1>Connexion</h1>
-                <form class="form col s12" action="/auth/login" method="post">
+                <form class="form col s12" id="login" action="/auth/login" method="post">
                     <div class="row">
                         <div class="input-field col s12">
                             <input id="username" type="text" name="username" class="validate white-text">
@@ -69,6 +69,33 @@ if(verif_bdvide($conn)){
                     <div class="row">
                         <button type="Submit" name="submit" class="btn blue waves-light waves-effect transparent">Se Connecter</button>
                     </div>
+                <!--
+                <script>
+                    // script pour recevoir le token
+                    const form = document.getElementById("login");
+                    form.addEventListener('submit', async (event) => {
+                        event.preventDefault();
+                        const username = document.getElementById('username').value;
+                        const password = document.getElementById('mdp').value;
+
+                        //envoyer le username et password
+                        const resultat = await fetch('/api/register', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                            body: JSON.stringify({
+                                username,
+                                password
+                            })
+                        }).then((res) => res.json());
+                        localStorage.setItem({token: resultat});
+
+                    });
+
+                    
+                </script>
+                -->
                 </form>
             </div>
         </div> 

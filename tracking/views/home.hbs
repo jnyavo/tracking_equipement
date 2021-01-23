@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!--
+<?php
+require "modules/restrictLogin.php"; 
+include "includes/head.php";
+
+//pour avoir la variable $titre (ligne 19)
+include "modules/getTitre.php"; 
+?>
+--> 
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tracking des equipements</title>
+    
+    <link rel="stylesheet" href="materialize\css\materialize.css" />
+    <link rel="stylesheet" href="materialize\iconfont\material-icons.css">
+   
+    <link rel="stylesheet" href="fontawesome\css\all.min.css">
+    <link rel="stylesheet" href="css\style.css" />
+ <!--   <link  rel="stylesheet" href="fontawesome\css\bootstrap.min.css">
+    <link  rel="stylesheet" href="css\bootstrap.min.css">
+    -->
+  
+</head>
+
+<body style="background-image: url('img/bg2.jpg');">
+    <!-- -----------------------------------------Menu-------------------------------------------- -->
+    <!-- <?php include "views/" . $_SESSION['type'] . "/menu.php"; ?> -->
+        <nav>
+        <div class="nav-wrapper blue-grey">
+            <a class="brand-logo left">
+                <img src="img/logo2.png" width="50px" heigth="50px" alt="logo">
+            </a>
+            <ul id="nav-mobile" class="right hide-on-med-and-down">
+                <li>
+                    <a class="white-text" href="main.php?q=new-admin&id=<?php echo $_SESSION['id'] ?>">
+                        <i class="fa fa-user-circle"></i> {{username}} </a>
+                </li>
+                <li>
+                    <a class="white-text" href="main.php">
+                        <i class="fa fa-list"></i> Liste equipements
+                    </a>
+                </li>
+                <li>
+                    <a class="white-text" href="main.php?q=new-admin">
+                        <i class="fa fa-lock"></i> Nouvel Admin
+                    </a>
+                </li>
+                <li>
+                    <a class="white-text" href="main.php?q=new-teacher">
+                        <i class="fa fa-user"></i> Nouveau Professeur
+                    </a>
+                </li>
+                <li>
+                    <a class="white-text" href="main.php?q=new-student">
+                        <i class="fa fa-book"></i> Nouvel Elève
+                    </a>
+                </li>
+                <li>
+                    <a href="auth/logout" class="white-text">
+                        <i class="fa fa-sign"></i> Deconnexion
+                    </a>
+                </li>
+                <li>
+                    <a  href="#module-form"
+                        class="btn waves-effect light-effect transparent modal-trigger">Nouvel equipement</a>
+                </li>
+            </ul>
+            <ul class="right hide-on-large-only">
+                <li>
+                    <a href="#" data-target="menu" class="sidenav-trigger">
+                        <i class="material-icons">menu</i>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <ul id="menu" class="sidenav blue-grey ligthen-5 white-text">
+        <li>
+            <a class="white-text" href="main.php?q=new-admin&self">
+                <i class="fa fa-user-circle"></i> <?php echo $_SESSION['name']; ?>
+            </a>
+        </li>
+        <div class="divider"></div>
+        <li>
+                    <a class="white-text" href="main.php">
+                        <i class="fa fa-list"></i> Liste
+                    </a>
+                </li>
+                <li>
+                    <a class="white-text" href="main.php#">
+                        <i class="fa fa-lock"></i> Nouvel Admin
+                    </a>
+                </li>
+        <li>
+            <a class="white-text" href="main.php?q=new-teacher">
+                <i class="fa fa-user"></i> Nouveau Professeur
+            </a>
+        </li>
+        <li>
+            <a class="white-text" href="main.php?q=new-student">
+                <i class="fa fa-book"></i> Nouvel Elève
+            </a>
+        </li>
+        <li>
+            <a class="white-text" href="main.php">
+                <i class="fa fa-sign"></i> Deconnexion
+            </a>
+        </li>
+    </ul>
+    <!--------------------------------------------------------------------------------------------->
+
+    <!-------------------------------------------En tête---------------------------------------------->
+    <div class="row"  style="background-color: rgba(20,20,20,0.3)">
+        <div class="col s12 white-text">
+            <h1><?php echo $titre ?></h1>
+            <p>
+                Réalisé par <a href="#">JOHANESA Asandratry Ny Avo</a> 
+            </p>
+        </div>
+    </div>
+    <!--------------------------------------------------------------------------------------------->
+
+<!--
+    <?php
+        // Selection contenu de la page par rapport à q
+        include "modules/jsPrint.php";
+
+        $q='welcome'; //page par defaut
+
+        if(isset($_GET['q'])){
+            if($_GET['q']!=null&&$_GET['q']!='')
+                $q=$_GET['q'];
+        }
+        switch($q){
+            case 'welcome':{
+                include "views/welcome.php";
+                break;
+            }
+            case 'new-student':{
+                include "views/admin/form_student.php";
+                break;
+            }
+            case 'new-teacher':{
+                include "views/admin/form_teacher.php";
+                break;
+            }
+            case 'new-admin':{
+                include "views/admin/form_admin.php";
+                break;
+            }
+            case 'new-affect':{
+                include "views/admin/affect_cours.php";
+                break;
+            }
+            case 'new-role':{
+                include "views/admin/new-role.php";
+                break;
+            }
+            case 'new-absence':{
+                include "views/prof/insertAbsence.php";
+                break;
+            }
+            case 'new-seance':{
+                include "views/prof/form_seance.php";
+                break;
+            }
+            case 'liste-absence':{
+                include "views/prof/liste_absence.php";
+                break;
+            }
+            
+        }
+    ?>
+-->
+    <!-------------------------------------------Bouton et Modal---------------------------------------------->
+   <!-- <?php 
+        include "views/" . $_SESSION['type'] . "/modal.php";
+    
+    ?> -->
+    <a id="new-module" href="#module-form" class="modal-trigger hide-on-large-only btn-floating btn-large waves-effect waves-light blue-grey">
+        <i class="material-icons">add</i>
+    </a>
+
+
+    <div id="module-form" class="modal">
+        <div class="modal-content">
+        <h4>Nouveau Module</h4>
+        <div class="divider"></div>
+        <br>
+        <form id="insertion_module" name="insertModule" action="modules/insertModule.php" onsubmit="return test_module();" method="post" enctype="multipart/form-data" accept-charset="utf-8">
+
+        <script>
+
+              function test_module() {
+                if (document.getElementById('intitule_module').value.replace(' ','') == ''){
+                    document.getElementById('intitule_module').className = "validate invalid";
+                  return false;
+                }
+                return true;
+              }
+             
+        </script>
+
+
+            <div class="row">
+                <div class="input-field col s12">
+                    <input id="intitule_module" name="intitule_module" type="text" require class="validate" >
+                    <label id="lab_mod" class="active" for="intitule_module">Nom du Module</label>
+                </div>
+            </div>
+            <div class="row">
+                <button name="submit" type="submit" class="btn waves-effect waves-light grey-blue" >
+                    Confirmer
+                    
+                </button>
+                
+                <button type="reset" onclick="toggle()" class="btn waves-effect waves-light red lighten-2">Annuler</button>
+               
+                
+            </div>
+        </form>
+        
+    </div>
+    <!-------------------------------------------------------------------------------------------------------->
+
+ <!--   <?php include "includes/scripts.php";?> -->
+    <script src="js\jquery-3.4.1.js"></script>
+    <script src="materialize\js\materialize.min.js"></script>
+    <script src="fontawesome\js\all.min.js"></script>
+    <script src="js\main.js"></script>
+    <script>
+    $(document).ready(function(){
+        $('.tabs').tabs();
+        $('.sidenav').sidenav();
+        $('.modal').modal();
+        $('select').formSelect();
+    });
+    </script>
+    <script>
+        function toggle() {
+            $('#module-form').modal('close');
+        }
+        function open_module(nom,id){
+            $('#module-form').modal('open');
+            document.getElementById('first_name2').value = nom;
+            document.getElementById('insertion_module').action = "modules/updateModule.php?id=".concat(id);
+            document.getElementById('lab_mod').className = "active";
+        }
+    </script>
+</body>
+</html>
