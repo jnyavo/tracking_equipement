@@ -6,6 +6,7 @@ const dotenv = require("dotenv");
 const path = require("path");
 const cookieParser = require("cookie-parser");
 const session = require("express-session");
+const hbs = require("hbs");
 
 //Importation des configurations dans le fichier .env
 dotenv.config({
@@ -58,6 +59,8 @@ app.use(session({
 //Utilisation de hbs pour l'affichage html
 app.set('view engine', 'hbs');
 
+//Specification de l'emplacement des partials
+hbs.registerPartials(__dirname + '/views/partials');
 
 /*
 app.get("/", (req,res) => {
