@@ -20,10 +20,14 @@ include "modules/getTitre.php";
    
     <link rel="stylesheet" href="fontawesome\css\all.min.css">
     <link rel="stylesheet" href="css\style.css" />
- <!--   <link  rel="stylesheet" href="fontawesome\css\bootstrap.min.css">
+    <!--   <link  rel="stylesheet" href="fontawesome\css\bootstrap.min.css">
     <link  rel="stylesheet" href="css\bootstrap.min.css">
     -->
-  
+    
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.0.0/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.0.0/mapbox-gl.css' rel='stylesheet' />
+
+
 </head>
 
 <body style="background-image: url('img/bg2.jpg');">
@@ -81,13 +85,13 @@ include "modules/getTitre.php";
     <ul id="menu" class="sidenav blue-grey ligthen-5 white-text">
         <li>
             <a class="white-text" href="main.php?q=new-admin&self">
-                <i class="fa fa-user-circle"></i> <?php echo $_SESSION['name']; ?>
+                <i class="fa fa-user-circle"></i> {{username}}
             </a>
         </li>
         <div class="divider"></div>
         <li>
                     <a class="white-text" href="main.php">
-                        <i class="fa fa-list"></i> Liste
+                        <i class="fa fa-list"></i> Liste equipements
                     </a>
                 </li>
                 <li>
@@ -123,6 +127,39 @@ include "modules/getTitre.php";
         </div>
     </div>
     <!--------------------------------------------------------------------------------------------->
+
+
+    <center>
+        <div id='map' style='border: 1px solid black; width: 70%; height: 400px;'></div>
+            <script>
+            mapboxgl.accessToken = 'pk.eyJ1Ijoiam55YXZvIiwiYSI6ImNrazlxeDFrbTBnMXkydW51enp6b2I4ZTQifQ.-S7B4qwXN1dbdguZ7Jrp8g';
+            var map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/streets-v11'
+            });
+            </script>
+        </div>
+    </center>
+
+    <!--
+        <script>
+        var mapboxgl = require('mapbox-gl/dist/mapbox-gl.js');
+ 
+        mapboxgl.accessToken = 'pk.eyJ1Ijoiam55YXZvIiwiYSI6ImNrazlxeDFrbTBnMXkydW51enp6b2I4ZTQifQ.-S7B4qwXN1dbdguZ7Jrp8g';
+        var map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/streets-v11'
+        });
+        
+        </script>
+    -->
+
+
+    <!-- <script defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDo3XrJvyTByzpv4eb9JnMYZ7uL9oHt6rs&callback=initMap">
+    </script>
+    -->
+
 
 <!--
     <?php

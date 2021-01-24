@@ -26,6 +26,11 @@ router.get("/home",(req,res) => {
         res.status(401).redirect('/');
         return;
     }
+
     res.render('home', {username: req.session.username});
 })
+
+
+
 module.exports = router;
+
