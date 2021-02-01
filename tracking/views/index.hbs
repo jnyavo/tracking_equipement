@@ -11,23 +11,9 @@ if(verif_bdvide($conn)){
 -->
 <!DOCTYPE html>
 <html lang="en">
-<!-- <?php include "includes/head.php";?> -->
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tracking des equipements</title>
-    
-    <link rel="stylesheet" href="materialize\css\materialize.css" />
-    <link rel="stylesheet" href="materialize\iconfont\material-icons.css">
-   
-    <link rel="stylesheet" href="fontawesome\css\all.min.css">
-    <link rel="stylesheet" href="css\style.css" />
- <!--   <link  rel="stylesheet" href="fontawesome\css\bootstrap.min.css">
-    <link  rel="stylesheet" href="css\bootstrap.min.css">
-    -->
-  
-</head>
+
+{{>head}}
 
 <style>
     div.container{
@@ -100,21 +86,9 @@ if(verif_bdvide($conn)){
             </div>
         </div> 
     </div>
-    <!--<?php include "includes/scripts.php";?> -->
 
-    <script src="js\jquery-3.4.1.js"></script>
-    <script src="materialize\js\materialize.min.js"></script>
-    <script src="fontawesome\js\all.min.js"></script>
-    <script src="js\main.js"></script>
-    <script>
-    $(document).ready(function(){
-        $('.tabs').tabs();
-        $('.sidenav').sidenav();
-        $('.modal').modal();
-        $('select').formSelect();
-    });
-    </script>
 
+   {{>scripts}}
 
 </body>
 </html>

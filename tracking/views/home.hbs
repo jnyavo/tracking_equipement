@@ -32,7 +32,7 @@
                         <select></select>
                     </div>
                     <div class="col s12">
-                       <center><button class="green darken-1 waves-effect waves-light btn">Select</button></center> 
+                       <center><button onclick="" class="green darken-1 waves-effect waves-light btn">Select</button></center> 
                     </div>
                 </div>
                 </div>
@@ -72,11 +72,62 @@
         
           
                 <script>
-                mapboxgl.accessToken = 'pk.eyJ1Ijoiam55YXZvIiwiYSI6ImNrazlxeDFrbTBnMXkydW51enp6b2I4ZTQifQ.-S7B4qwXN1dbdguZ7Jrp8g';
-                var map = new mapboxgl.Map({
-                container: 'map',
-                style: 'mapbox://styles/mapbox/streets-v11'
-                });
+
+                    mapboxgl.accessToken = 'pk.eyJ1Ijoiam55YXZvIiwiYSI6ImNrazlxeDFrbTBnMXkydW51enp6b2I4ZTQifQ.-S7B4qwXN1dbdguZ7Jrp8g';
+                    var map = new mapboxgl.Map({
+                    container: 'map',
+                    style: 'mapbox://styles/mapbox/streets-v11',
+                    center: [57.45367983856331,-20.244244734600016],
+                    zoom : 18
+                    });
+
+                    window.setInterval(()=>{
+                        var coord = map.getCenter();
+                        document.getElementById('longitude').value = coord.lng;
+                        document.getElementById('latitude').value = coord.lat;
+                    }, 100);
+
+                    //simulateur de deplacement
+                    function simulation(){
+                        var url = 'https://wanderdrone.appspot.com/';
+                        map.addSource('drone', { type: 'geojson', data: url });
+                        map.addLayer({
+                            'id': 'drone',
+                            'type': 'symbol',
+                            'source': 'drone',
+                            'layout': {
+                                'icon-image': 'rocket-15'
+                                }
+                            });
+                        
+                        var request = new XMLHttpRequest();
+
+                        window.setInterval(function () {
+                            // make a GET request to parse the GeoJSON at the url
+                            request.open('GET', url, true);
+                            request.onload = function () {
+                                if (this.status >= 200 && this.status < 400) {
+                                    // retrieve the JSON from the response
+                                    var json = JSON.parse(this.response);
+                                    
+                                    // update the drone symbol's location on the map
+                                    map.getSource('drone').setData(json);
+                                    
+                                    // fly the map to the drone's current location
+                                    map.flyTo({
+                                        center: json.geometry.coordinates,
+                                        speed: 0.5
+                                    });
+                                }
+                            };
+                            request.send();
+                    }, 500);
+                        
+                       
+                        
+                    }
+
+                    
                 </script>
             </div>
             <div class="col s12">
