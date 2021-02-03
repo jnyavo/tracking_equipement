@@ -68,8 +68,24 @@
 
       </div>
         <div class="col m12 l6">
+            <div id="menu">
+                
+                <label for="streets-v11"> <input class="with-gap" id="streets-v11" type="radio" name="rtoggle" value="streets" onclick="switchLayer(this);" checked="checked"/> <span>streets</span></label>
+                
+                <label for="light-v10"><input  id="light-v10" type="radio" name="rtoggle" value="light" onclick="switchLayer(this);" /><span>light</span></label>
+                
+                <label for="dark-v10"><input  id="dark-v10" type="radio" name="rtoggle" value="dark" onclick="switchLayer(this);" /><span>dark</span></label>
+                
+                <label for="outdoors-v11"><input  id="outdoors-v11" type="radio" name="rtoggle" value="outdoors" onclick="switchLayer(this);" /><span>outdoors</span></label>
+
+                <label for="satellite-v9"><input  id="satellite-v9" type="radio" name="rtoggle" value="satellite" onclick="switchLayer(this);" /><span>satellite</span></label>
+            </div>
+
+
+            <!-- Map -->
+
              <div class="col s12" id='map' style='border: 1px solid black; height: 400px;'> <!-- Note that "m8 l9" was added -->
-        
+                
           
                 <script>
 
@@ -81,55 +97,159 @@
                     zoom : 18
                     });
 
+                    var size = 100;
+ 
+                    // implementation of CustomLayerInterface to draw a pulsing dot icon on the map
+                    // see https://docs.mapbox.com/mapbox-gl-js/api/#customlayerinterface for more info
+                    var pulsingDot = {
+                        width: size,
+                        height: size,
+                        data: new Uint8Array(size * size * 4),
+                        
+                        // get rendering context for the map canvas when layer is added to the map
+                        onAdd: function () {
+                            var canvas = document.createElement('canvas');
+                            canvas.width = this.width;
+                            canvas.height = this.height;
+                            this.context = canvas.getContext('2d');
+                        },
+                        
+                        // called once before every frame where the icon will be used
+                        render: function () {
+                            var duration = 1000;
+                            var t = (performance.now() % duration) / duration;
+                            
+                            var radius = (size / 2) * 0.3;
+                            var outerRadius = (size / 2) * 0.7 * t + radius;
+                            var context = this.context;
+                            
+                            // draw outer circle
+                            context.clearRect(0, 0, this.width, this.height);
+                            context.beginPath();
+                            context.arc(
+                                this.width / 2,
+                                this.height / 2,
+                                outerRadius,
+                                0,
+                                Math.PI * 2
+                            );
+                            context.fillStyle = 'rgba(255, 200, 200,' + (1 - t) + ')';
+                            context.fill();
+                            
+                            // draw inner circle
+                            context.beginPath();
+
+                            context.arc(
+                                this.width / 2,
+                                this.height / 2,
+                                radius,
+                                0,
+                                Math.PI * 2
+                            );
+                            context.fillStyle = 'rgba(255, 100, 100, 1)';
+                            context.strokeStyle = 'white';
+                            context.lineWidth = 2 + 4 * (1 - t);
+                            context.fill();
+                            context.stroke();
+                            
+                            // update this image's data with data from the canvas
+                            this.data = context.getImageData(
+                                0,
+                                0,
+                                this.width,
+                                this.height
+                            ).data;
+                            
+                            // continuously repaint the map, resulting in the smooth animation of the dot
+                            map.triggerRepaint();
+                            
+                            // return `true` to let the map know that the image was updated
+                            return true;
+                        }
+                    };
+                    
+                  
+                    
+                    function switchLayer(layer) {
+                        var layerId = layer.id;
+                        map.setStyle('mapbox://styles/mapbox/' + layerId);
+                    }
+                    
+
                     window.setInterval(()=>{
                         var coord = map.getCenter();
                         document.getElementById('longitude').value = coord.lng;
                         document.getElementById('latitude').value = coord.lat;
                     }, 100);
 
+                   
+                    
                     //simulateur de deplacement
                     function simulation(){
-                        var url = 'https://wanderdrone.appspot.com/';
-                        map.addSource('drone', { type: 'geojson', data: url });
+
+                        //url de l'API http CrateDB
+                        var url = 'http://localhost:4200/_sql';
+
+                        map.addSource('drone', { type: 'geojson', data: 'https://wanderdrone.appspot.com/' });
+                        map.addImage('pulsing-dot', pulsingDot, { pixelRatio: 2 });
                         map.addLayer({
                             'id': 'drone',
                             'type': 'symbol',
                             'source': 'drone',
                             'layout': {
-                                'icon-image': 'rocket-15'
+                                'icon-image': 'pulsing-dot'
                                 }
                             });
+                        
                         
                         var request = new XMLHttpRequest();
 
                         window.setInterval(function () {
                             // make a GET request to parse the GeoJSON at the url
-                            request.open('GET', url, true);
+                            request.open('POST', url, true);
+                            request.setRequestHeader('Content-Type', 'application/json');
+                        
+
                             request.onload = function () {
                                 if (this.status >= 200 && this.status < 400) {
                                     // retrieve the JSON from the response
-                                    var json = JSON.parse(this.response);
-                                    
+                                    var res = JSON.parse(this.response);
+                                    var point = res.rows[0][1];
+                                    console.log(point);
+                                  
                                     // update the drone symbol's location on the map
-                                    map.getSource('drone').setData(json);
+                                    map.getSource('drone').setData({
+                                        "geometry": 
+                                            {
+                                            "type": "Point", 
+                                             "coordinates": point}, 
+                                             "type": "Feature", 
+                                             "properties": {}
+                                             });
                                     
+                                    /*
                                     // fly the map to the drone's current location
                                     map.flyTo({
-                                        center: json.geometry.coordinates,
+                                        center: point,
                                         speed: 0.5
-                                    });
+                                    }
+                                   
+                                    )
+                                     */
                                 }
                             };
-                            request.send();
-                    }, 500);
+                            request.send(JSON.stringify({
+                                stmt: 'select id,position from equipement'
+                            }));
+                        }, 500);
                         
                        
                         
                     }
-
-                    
+                
                 </script>
             </div>
+            <!-- -->
             <div class="col s12">
                 
                     <div class="row">
@@ -153,7 +273,7 @@
             <div class="row">
                 <form action="#" class="col 9" style="margin-left: 2vw;">
                     <div class="col s12">
-                        <h5 class="white-text">Nouvel equipement</h5>
+                        <h5 class="white-text">Nouvel equipement / <br> Modification</h5>
                     </div>
                     <div class="input-field col s10">
                         <input type="text">
