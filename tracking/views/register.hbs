@@ -1,31 +1,10 @@
-<!--<?php  session_start();
-    $_SESSION['vide'] = true; 
-    require "modules/verif_bdvide.php";
-    require "modules/database.php";
 
-    if(!verif_bdvide($conn)){
-        header("location: index.php");
-    }
-    
-    ?>
--->
 <!DOCTYPE html>
 <html lang="en">
-<!-- <?php include "includes/head.php";?> -->
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tracking des équipements</title>
-    
-    <link rel="stylesheet" href="materialize\css\materialize.css" />
-    <link rel="stylesheet" href="materialize\iconfont\material-icons.css">
-   
-    <link rel="stylesheet" href="fontawesome\css\all.min.css">
-    <link rel="stylesheet" href="css\style.css" />
-   <!-- <link  rel="stylesheet" href="fontawesome\css\bootstrap.min.css">
-    <link  rel="stylesheet" href="css\bootstrap.min.css"> -->
-  
-</head>
+
+{{>head}}
+
+
 <style>
     div.container{
         background-color: rgba(0, 0, 0, 0.3);
@@ -36,45 +15,7 @@
 <body style="background-image: url('img/bg2.jpg');">
     <div class="container">
         <div class="row">
-          <!--<?php 
-                include "views/admin/form_admin.php";
-          ?>
-          -->
-<!--<?php 
-$pseudo = "";
-$nom =  "";
-$prenom =  "";
-
-$email =  "";
-
-
-
-//Dans le cas où il s'agit d'un edit
-if (isset($_GET['id'])) {
-    require "modules/database.php";
-  
-    $admin = $conn->query("SELECT * FROM admin WHERE id_user=" . $_GET['id']);
-    $admin = $admin->fetchObject();
-    $user = $conn->query("SELECT * FROM user WHERE id_user=" . $_GET['id']);
-    $user = $user->fetchObject();
-    $pseudo = $user->name;
-    
-
-    $nom = $admin->nom_admin;
-    $prenom = $admin->prenom_admin;
-
-
-    $email = $admin->email_admin;
- 
-
-    
-    
-  }
-
-
-
-
-?> -->
+         
 <div class="container">
     <h3 class="center-align">Nouvel Admin</h3>
     <br>
@@ -179,49 +120,12 @@ if (isset($_GET['id'])) {
         </form>
     </div>
 </div>
-<!-- <?php include "includes/maxlength.php"; ?> -->
-<script>
-    document.getElementById("nom").setAttribute('maxlength',"50");
-    document.getElementById("prenom").setAttribute('maxlength',"50");
-/*    try{
-    document.getElementById("id_etudiant").setAttribute('maxlength',"10");
-    } catch(error){}
-*/   
-    document.getElementById("username").setAttribute('maxlength',"25");
-    document.getElementById("email").setAttribute('maxlength',"100");
-/*    try{
-    document.getElementById("town").setAttribute('maxlength',"100");
-    } catch(error){}
-    try{
-    document.getElementById("birth_town").setAttribute('maxlength',"100");
-    } catch(error){}
-    try{
-    document.getElementById("address").setAttribute('maxlength',"100");
-    } catch(error){}
-    try{
-    document.getElementById('tel').setAttribute('maxlength',"18");
-    } catch(error){}
-*/
 
-</script>
+{{>maxlength}}
 
 
 
-
-        </div> 
-    </div>
-    <!-- <?php include "includes/scripts.php";?> -->
-    <script src="js\jquery-3.4.1.js"></script>
-    <script src="materialize\js\materialize.min.js"></script>
-    <script src="fontawesome\js\all.min.js"></script>
-    <script src="js\main.js"></script>
-    <script>
-    $(document).ready(function(){
-        $('.tabs').tabs();
-        $('.sidenav').sidenav();
-        $('.modal').modal();
-        $('select').formSelect();
-    });
-    </script>
+   
+   {{> scripts}}
 </body>
 </html>
