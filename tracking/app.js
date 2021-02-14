@@ -78,6 +78,9 @@ app.use("/", require("./routes/pages"));
 //Utilisation du fichier route auth.js pour si l'utilisateur veut aller dans '/auth'
 app.use("/auth", require("./routes/auth"));
 
+//Route pour crate
+app.use("/crate",require("./routes/crate"));
+
 app.listen(5000, () => {
     console.log("Server started on Port 5000");
 });

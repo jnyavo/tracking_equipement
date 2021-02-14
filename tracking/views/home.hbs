@@ -47,27 +47,15 @@
                             </select>
                     </div>
                     
-                    <div class="col s12 card-panel" style="height: 250px; overflow-y:scroll; background-color:inherit">
-                       <table>
-                           <tr>
-                                <td>
-                                   <div class="row">
-                                       <div class="col l12">ID: </div>
-                                       <div class="col l12">Libellé: </div>
-                                       <div class="col l12">Catégorie: </div>
-                                   </div>
-                                </td>
-                                <td>
-                                    <div class="row">
-                                       <div class="col l12">Salle</div>
-                                    
-                                   </div>
-                                </td>
-                           </tr>
+                    
+                </div>
+                
+                </div>
+                <div class="col s12 card-panel" style="height: 250px; overflow-y:scroll; background-color:inherit">
+                       <table id="liste_detecte">
+                           
                        </table>
                     </div>
-                </div>
-                </div>
                 
                 
                 
@@ -80,12 +68,7 @@
                        
                         
                     </div>
-                    <div class="col l12">
-                     
-                            <center><button class="waves-effect waves-light btn" style="margin: 5px;">Modifier nom</button></center>
-                        
-                         
-                    </div>
+                    
                     <div class="col l12">
                     
                             <center><button class="red waves-effect waves-light btn" style="margin: 5px;">Supprimer</button></center> 
@@ -222,13 +205,126 @@
                             .addTo(map);
                     },100);
                     */
-                   
+                    var info_equipements = {};
+                    var url = '/crate/equipement';
+                    var tracking = window.setInterval(()=>{
+                        var request = new XMLHttpRequest();
+                        request.open('GET', url, true);
+                        request.onload = function () {
+                            if (this.status >= 200 && this.status < 400) {
+                               
+                                info_equipements = JSON.parse(this.response);
+                                
+                            }
+                        };
+                        request.send();
+
+                    },1000);
+
+                    //liste des ID
+                    var liste = [];
+                    
+                    var last_length = liste.length;
+
+                    var maj_liste = window.setInterval(()=>{
+                        if(!jQuery.isEmptyObject(info_equipements))
+                        {
+                            var temp = [...info_equipements.rows];
+                            for(i=0;i<liste.rowCount;i++)
+                            {
+                                delete temp[i].position;
+                                delete temp[i].salle;
+                            }
+                            liste = [...temp];
+
+                          
+                           }
+                    },2000);
+
+
+                    var maj_affichage = window.setInterval(()=>{
+                        //Mise à jour affichage 
+                        if(liste.length != last_length)
+                        {
+                            var table = document.getElementById('liste_detecte');
+                            table.innerHTML='';
+                            for(i=0;i<info_equipements.rowCount;i++)
+                            {
+                                //Une ligne sur le tableau
+                                
+                                var equip = document.createElement('tr');
+                                
+                               
+                                equip.innerHTML = `
+                                <tr>
+                                    <td>
+                                        <div class="row">
+                                            <div class="col l12">ID: ${liste[i].id} </div>
+                                            <div class="col l12">Libellé: indefini</div>
+                                            <div class="col l12">Catégorie: indefini</div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="row">
+                                            <div class="col l12">Salle</div>
+                                            <div class="col l12" id="salle_${liste[i].id}"> ${info_equipements.rows[i].salle}</div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="row">
+                                                <div class="col l12">
+                                                    <button class="transparent waves-effect waves-light" style="font-size:10px"><i class="fa fa-edit"></i></button>
+                                                </div>
+                                                <div class="col l12">
+                                                    <button class="transparent waves-effect waves-light" style="font-size:10px "><i class="fa fa-trash"></i></button>
+                                                </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                `;
+                                table.appendChild(equip);
+
+                                           
+
+                            }
+                            last_length = liste.length;
+                            /*
+                            <tr>
+                                <td>
+                                   <div class="row">
+                                       <div class="col l12">ID: </div>
+                                       <div class="col l12">Libellé: </div>
+                                       <div class="col l12">Catégorie: </div>
+                                   </div>
+                                </td>
+                                <td>
+                                    <div class="row">
+                                       <div class="col l12">Salle</div>
+                                    
+                                   </div>
+                                </td>
+                           </tr>
+                           */
+
+                            
+                        }
+                        else 
+                        {
+                             for(i=0;i<info_equipements.rowCount;i++)
+                            {
+                                var id_salle = document.getElementById(`salle_${info_equipements.rows[i].id}`)
+                                id_salle.innerText = info_equipements.rows[i].salle;
+                            }
+                        }
+                    },2000);
+
+
                     
                     //simulateur de deplacement
                     function simulation(){
 
-                        //url de l'API http CrateDB
-                        var url = 'http://localhost:4200/_sql';
+                        
+                        var url = '/crate/equipement';
 
                         map.addSource('drone', { type: 'geojson', data: 'https://wanderdrone.appspot.com/' });
                         map.addImage('pulsing-dot', pulsingDot, { pixelRatio: 2 });
@@ -246,15 +342,15 @@
 
                         window.setInterval(function () {
                             // make a GET request to parse the GeoJSON at the url
-                            request.open('POST', url, true);
-                            request.setRequestHeader('Content-Type', 'application/json');
+                            request.open('GET', url, true);
+                           
                         
 
                             request.onload = function () {
                                 if (this.status >= 200 && this.status < 400) {
                                     // retrieve the JSON from the response
                                     var res = JSON.parse(this.response);
-                                    var point = res.rows[0][1];
+                                    var point = [res.rows[0].position.x,res.rows[0].position.y];
                                     console.log(point);
                                   
                                     // update the drone symbol's location on the map
@@ -278,10 +374,8 @@
                                      */
                                 }
                             };
-                            request.send(JSON.stringify({
-                                stmt: 'select id,position,salle from equipement'
-                            }));
-                        }, 500);
+                           request.send();
+                        }, 1000);
                         
                        
                         
