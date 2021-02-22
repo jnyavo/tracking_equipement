@@ -183,10 +183,10 @@
                         }
                     };
                     
-                  
+                    var layerId = '';
                     
                     function switchLayer(layer) {
-                        var layerId = layer.id;
+                        layerId = layer.id;
                         map.setStyle('mapbox://styles/mapbox/' + layerId);
                     }
                     
@@ -316,70 +316,82 @@
                                 id_salle.innerText = info_equipements.rows[i].salle;
                             }
                         }
-                    },2000);
+                    },1000);
 
-
-                    
-                    //simulateur de deplacement
-                    function simulation(){
-
-                        
-                        var url = '/crate/equipement';
-
-                        map.addSource('drone', { type: 'geojson', data: 'https://wanderdrone.appspot.com/' });
+                  
+                    map.on('load', () => {
                         map.addImage('pulsing-dot', pulsingDot, { pixelRatio: 2 });
-                        map.addLayer({
-                            'id': 'drone',
-                            'type': 'symbol',
-                            'source': 'drone',
-                            'layout': {
-                                'icon-image': 'pulsing-dot'
-                                }
-                            });
-                        
-                        
-                        var request = new XMLHttpRequest();
+                        for (i=0;i<info_equipements.rowCount;i++)
+                                 {
+                                    map.addSource(info_equipements.rows[i].id, { type: 'geojson', data: 'https://wanderdrone.appspot.com/' });
+                                    
+                                    map.addLayer({
+                                    'id': info_equipements.rows[i].id,
+                                    'type': 'symbol',
+                                    'source': info_equipements.rows[i].id,
+                                    'layout': {
+                                        'icon-image': 'pulsing-dot'
+                                        }
+                                    });
+                                 }
 
-                        window.setInterval(function () {
-                            // make a GET request to parse the GeoJSON at the url
-                            request.open('GET', url, true);
+
+                        window.setInterval(()=>{
                            
-                        
+                             if(liste.length != last_length)
+                             {
+                                 for (i=0;i<info_equipements.rowCount;i++)
+                                 {
+                                        map.setStyle('mapbox://styles/mapbox/' + layerId);
+                                        map.addSource(info_equipements.rows[i].id, { type: 'geojson', data: 'https://wanderdrone.appspot.com/' });
+                                        map.addImage('pulsing-dot', pulsingDot, { pixelRatio: 2 });
+                                        map.addLayer({
+                                        'id': info_equipements.rows[i].id,
+                                        'type': 'symbol',
+                                        'source': info_equipements.rows[i].id,
+                                        'layout': {
+                                            'icon-image': 'pulsing-dot'
+                                            }
+                                        });
+                                    
+                                    
+                                 }
+                             }
 
-                            request.onload = function () {
-                                if (this.status >= 200 && this.status < 400) {
-                                    // retrieve the JSON from the response
-                                    var res = JSON.parse(this.response);
-                                    var point = [res.rows[0].position.x,res.rows[0].position.y];
-                                    console.log(point);
-                                  
+                            
+
+                        },1000);
+
+                        window.setInterval(()=>{
+                           
+                
+                                    
+
+                                for(i=0;i<info_equipements.rowCount; i++)
+                                {
+                                    var point = [info_equipements.rows[i].position.x,info_equipements.rows[i].position.y];
+                                    
+                                
                                     // update the drone symbol's location on the map
-                                    map.getSource('drone').setData({
+                                    map.getSource(info_equipements.rows[i].id).setData({
                                         "geometry": 
                                             {
                                             "type": "Point", 
-                                             "coordinates": point}, 
-                                             "type": "Feature", 
-                                             "properties": {}
-                                             });
-                                    
-                                    /*
-                                    // fly the map to the drone's current location
-                                    map.flyTo({
-                                        center: point,
-                                        speed: 0.5
-                                    }
-                                   
-                                    )
-                                     */
+                                            "coordinates": point}, 
+                                            "type": "Feature", 
+                                            "properties": {}
+                                            });
                                 }
-                            };
-                           request.send();
-                        }, 1000);
+                                    
+                                    
+                                
+                            
                         
-                       
                         
-                    }
+                        
+                    },1000);
+                    //simulateur de deplacement
+                    });
                 
                 </script>
             </div>

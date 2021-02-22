@@ -2,12 +2,15 @@ import time
 import sys
 import random
 from crate import client
+from datetime import datetime
 
 SALLES = {
     "B215":[57.45375899782175,-20.244057573751704],
     "D25":[57.453671791904185,-20.24437056046702],
     "Labo":[57.45318631305574,-20.244229636079382]
     }
+
+random.seed(datetime.now())
 
 def getRandomPosition(lat_min,lat_max,lng_min,lng_max):
     #position au hasard autour de l'université
