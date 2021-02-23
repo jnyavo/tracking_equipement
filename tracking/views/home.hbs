@@ -30,20 +30,20 @@
                     <div class="row">
                         <h5 class="white-text">Equipements detectés</h5>
                     <div class="col s12">
-                        <form>
+                        
                             <div class="input-field">
                                 <input id="search" type="search" required>
                                 <label class="label-icon" for="search"><i class="material-icons">search</i></label>
                                 <i class="material-icons">close</i>
                             </div>
-                        </form>
+                        
                     </div>
                     <div class="col s12">
-                        <select>
-                            <option value="">ID</option>
-                            <option value="">Libellé</option>
-                            <option value="">Catégorie</option>
-                            <option value="">Salle</option>
+                        <select id="search_type">
+                            <option value="1">ID</option>
+                            <option value="2">Libellé</option>
+                            <option value="3">Catégorie</option>
+                            <option value="4">Salle</option>
                             </select>
                     </div>
                     
@@ -101,9 +101,9 @@
 
              <div class="col s12" id='map' style='border: 1px solid black; height: 400px;'> <!-- Note that "m8 l9" was added -->
                 
-          
+                <script src="js\jquery-3.4.1.js"></script>
                 <script>
-
+                    
                     mapboxgl.accessToken = 'pk.eyJ1Ijoiam55YXZvIiwiYSI6ImNrazlxeDFrbTBnMXkydW51enp6b2I4ZTQifQ.-S7B4qwXN1dbdguZ7Jrp8g';
                     var map = new mapboxgl.Map({
                     container: 'map',
@@ -206,6 +206,9 @@
                     },100);
                     */
                     var info_equipements = {};
+                    var static_equipements  = {};
+                    var categories = {};
+
                     var url = '/crate/equipement';
                     var tracking = window.setInterval(()=>{
                         var request = new XMLHttpRequest();
@@ -220,7 +223,29 @@
                         request.send();
 
                     },1000);
-
+                    var db_sql = window.setInterval(()=>{
+                        var request = new XMLHttpRequest();
+                        request.open('GET','/sql/equipement',true);
+                        request.onload = function() {
+                            if (this.status >= 200 && this.status < 400) {
+                               
+                                static_equipements = JSON.parse(this.response);
+                                
+                            }
+                        };
+                        request.send();
+                        
+                        request = new XMLHttpRequest();
+                        request.open('GET','/sql/categorie',true);
+                        request.onload = function() {
+                            if (this.status >= 200 && this.status < 400) {
+                               
+                                categories = JSON.parse(this.response);
+                                
+                            }
+                        };
+                        request.send();
+                    },10000);
                     //liste des ID
                     var liste = [];
                     
@@ -253,6 +278,24 @@
                                 //Une ligne sur le tableau
                                 
                                 var equip = document.createElement('tr');
+                                var libelle;
+                                var categorie;
+                                let equipement = static_equipements.filter((element)=>{return !liste[i].id.localeCompare(element.id_equipement);});
+                
+                                if (equipement.length == 0)
+                                {
+                                    libelle = 'indefini';
+                                    categorie = 'indefini';
+                                } 
+                                else
+                                {
+                                    libelle = equipement.libelle;
+                                    info_equipements.rows[i].libelle = libelle
+                                    categorie = categories.filter((element)=>{return !equipement.id_categorie.localeCompare(element.id_categorie);})[0].libelle;
+                                    info_equipements.rows[i].categorie = categorie
+                                }   
+                                    
+
                                 
                                
                                 equip.innerHTML = `
@@ -260,8 +303,8 @@
                                     <td>
                                         <div class="row">
                                             <div class="col l12">ID: ${liste[i].id} </div>
-                                            <div class="col l12">Libellé: indefini</div>
-                                            <div class="col l12">Catégorie: indefini</div>
+                                            <div class="col l12">Libellé: ${libelle}</div>
+                                            <div class="col l12">Catégorie: ${categorie}</div>
                                         </div>
                                     </td>
                                     <td>
@@ -273,10 +316,10 @@
                                     <td>
                                         <div class="row">
                                                 <div class="col l12">
-                                                    <button class="transparent waves-effect waves-light" style="font-size:10px"><i class="fa fa-edit"></i></button>
+                                                    <button class="transparent waves-effect waves-light" style="font-size:10px" value="${i}" onclick="modifier_equipement(this)"><i class="fa fa-edit"></i></button>
                                                 </div>
                                                 <div class="col l12">
-                                                    <button class="transparent waves-effect waves-light" style="font-size:10px "><i class="fa fa-trash"></i></button>
+                                                    <button class="transparent waves-effect waves-light" style="font-size:10px value="${i}""><i class="fa fa-trash"></i></button>
                                                 </div>
                                         </div>
                                     </td>
@@ -288,24 +331,7 @@
 
                             }
                             last_length = liste.length;
-                            /*
-                            <tr>
-                                <td>
-                                   <div class="row">
-                                       <div class="col l12">ID: </div>
-                                       <div class="col l12">Libellé: </div>
-                                       <div class="col l12">Catégorie: </div>
-                                   </div>
-                                </td>
-                                <td>
-                                    <div class="row">
-                                       <div class="col l12">Salle</div>
-                                    
-                                   </div>
-                                </td>
-                           </tr>
-                           */
-
+                         
                             
                         }
                         else 
@@ -393,7 +419,89 @@
                     //simulateur de deplacement
                     });
                 
+                 /*
+                    Script de recherche
+                */
+                                   
+                var typingTimer;                //timer identifier
+                var doneTypingInterval = 500;  //time in ms, 5 second for example
+                //var $('#search') = $('#search');
+
+                //on keyup, start the countdown
+                $('#search').on('keyup', function () {
+                clearTimeout(typingTimer);
+                typingTimer = setTimeout(doneTyping, doneTypingInterval);
+                });
+
+                //on keydown, clear the countdown 
+                $('#search').on('keydown', function () {
+                clearTimeout(typingTimer);
+                });
+
+                //user is "finished typing," do something
+
+                var search_liste = ['','id','libelle','categorie','salle'];
+                function afficher_search(text,type)
+                {
+                    clearInterval(maj_affichage);
+                    
+                    var table = document.getElementById('liste_detecte');
+                    table.innerHTML='';
+                    for(i=0;i<info_equipements.rowCount;i++)
+                            {
+                                
+                                if(text.localeCompare(info_equipements.rows[i][type].substring(0,text.length)))
+                                {
+                                    continue;
+                                }
+                                    
+                                var equip = document.createElement('tr');
+                                
+                               
+                                equip.innerHTML = `
+                                <tr>
+                                    <td>
+                                        <div class="row">
+                                            <div class="col l12">ID: ${liste[i].id} </div>
+                                            <div class="col l12">Libellé: indefini</div>
+                                            <div class="col l12">Catégorie: indefini</div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="row">
+                                            <div class="col l12">Salle</div>
+                                            <div class="col l12" id="salle_${liste[i].id}"> ${info_equipements.rows[i].salle}</div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="row">
+                                                <div class="col l12">
+                                                    <button class="transparent waves-effect waves-light" style="font-size:10px"><i class="fa fa-edit"></i></button>
+                                                </div>
+                                                <div class="col l12">
+                                                    <button class="transparent waves-effect waves-light" style="font-size:10px "><i class="fa fa-trash"></i></button>
+                                                </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                `;
+                                table.appendChild(equip);
+
+                                           
+
+                            }
+                            last_length = liste.length;
+                }
+
+                function doneTyping () {
+                    var search_type = document.getElementById('search_type').value;
+                    afficher_search($('#search').val(),search_liste[parseInt(search_type)])
+                }
+                
+                
+               
                 </script>
+               
             </div>
             <!-- -->
             <div class="col s12">
