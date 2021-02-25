@@ -34,7 +34,7 @@
                             <div class="input-field">
                                 <input id="search" type="search" required>
                                 <label class="label-icon" for="search"><i class="material-icons">search</i></label>
-                                <i class="material-icons">close</i>
+                                <i class="material-icons"  onclick="document.getElementById('search').value =''; doneTyping(); ">close</i>
                             </div>
                         
                     </div>
@@ -206,11 +206,15 @@
                     },100);
                     */
                     var info_equipements = {};
-                    var static_equipements  = {};
-                    var categories = {};
-
+                    var info_selon_index = [];
+                    var static_equipements  = [];
+                    var categories = [];
+                    var update = true;
+                    var viderMap = false;
                     var url = '/crate/equipement';
                     var tracking = window.setInterval(()=>{
+                       
+                        
                         var request = new XMLHttpRequest();
                         request.open('GET', url, true);
                         request.onload = function () {
@@ -220,6 +224,7 @@
                                 
                             }
                         };
+                        
                         request.send();
 
                     },1000);
@@ -269,6 +274,9 @@
 
                     var maj_affichage = window.setInterval(()=>{
                         //Mise à jour affichage 
+                         if (!update)
+                            return;
+
                         if(liste.length != last_length)
                         {
                             var table = document.getElementById('liste_detecte');
@@ -280,7 +288,9 @@
                                 var equip = document.createElement('tr');
                                 var libelle;
                                 var categorie;
-                                let equipement = static_equipements.filter((element)=>{return !liste[i].id.localeCompare(element.id_equipement);});
+                                let equipement = static_equipements.filter((element)=>{
+                                    return !liste[i].id.localeCompare(element.id_equipement);
+                                    });
                 
                                 if (equipement.length == 0)
                                 {
@@ -290,14 +300,14 @@
                                 else
                                 {
                                     libelle = equipement.libelle;
-                                    info_equipements.rows[i].libelle = libelle
-                                    categorie = categories.filter((element)=>{return !equipement.id_categorie.localeCompare(element.id_categorie);})[0].libelle;
-                                    info_equipements.rows[i].categorie = categorie
-                                }   
                                     
-
-                                
-                               
+                                    categorie = categories.filter((element)=>{return !equipement.id_categorie.localeCompare(element.id_categorie);})[0].libelle;
+                                    
+                                }   
+                                    info_selon_index[i] = {};
+                                    info_selon_index[i].categorie = categorie;
+                                    info_selon_index[i].libelle = libelle;
+                                    info_selon_index[i].id_categorie = equipement.id_categorie;
                                 equip.innerHTML = `
                                 <tr>
                                     <td>
@@ -339,13 +349,19 @@
                              for(i=0;i<info_equipements.rowCount;i++)
                             {
                                 var id_salle = document.getElementById(`salle_${info_equipements.rows[i].id}`)
-                                id_salle.innerText = info_equipements.rows[i].salle;
+                                try
+                                {
+                                    id_salle.innerText = info_equipements.rows[i].salle || '';
+                                }
+                                catch(TypeError)
+                                {
+                                    
+                                }
                             }
                         }
                     },1000);
-
-                  
-                    map.on('load', () => {
+                    function afficher_surMap()
+                    {
                         map.addImage('pulsing-dot', pulsingDot, { pixelRatio: 2 });
                         for (i=0;i<info_equipements.rowCount;i++)
                                  {
@@ -369,6 +385,7 @@
                                  for (i=0;i<info_equipements.rowCount;i++)
                                  {
                                         map.setStyle('mapbox://styles/mapbox/' + layerId);
+                                        viderMap = true;
                                         map.addSource(info_equipements.rows[i].id, { type: 'geojson', data: 'https://wanderdrone.appspot.com/' });
                                         map.addImage('pulsing-dot', pulsingDot, { pixelRatio: 2 });
                                         map.addLayer({
@@ -415,10 +432,19 @@
                         
                         
                         
-                    },1000);
-                    //simulateur de deplacement
+                            },1000);
+                    
+                    }
+                  
+                    map.on('load', () => {
+                        afficher_surMap();
+                    
                     });
-                
+                    map.on('style.load', function () {
+                    
+                        if (!viderMap) afficher_surMap();
+                        else viderMap = false;
+                    });
                  /*
                     Script de recherche
                 */
@@ -438,23 +464,27 @@
                 clearTimeout(typingTimer);
                 });
 
-                //user is "finished typing," do something
-
+               
+                window.setInterval(()=>{
+                    if(!update)
+                    setTimeout(()=>{
+                        update = true;
+                    },5000)
+                },1000)
                 var search_liste = ['','id','libelle','categorie','salle'];
                 function afficher_search(text,type)
                 {
-                    clearInterval(maj_affichage);
+                    update = false;
                     
                     var table = document.getElementById('liste_detecte');
                     table.innerHTML='';
                     for(i=0;i<info_equipements.rowCount;i++)
                             {
                                 
-                                if(text.localeCompare(info_equipements.rows[i][type].substring(0,text.length)))
-                                {
-                                    continue;
-                                }
-                                    
+                                if(text.localeCompare((info_equipements.rows[i][type] || "").substring(0,text.length)))
+                                    if(text.localeCompare((info_selon_index[i][type] || "").substring(0,text.length)))
+                                        continue;
+                                  
                                 var equip = document.createElement('tr');
                                 
                                
@@ -463,8 +493,8 @@
                                     <td>
                                         <div class="row">
                                             <div class="col l12">ID: ${liste[i].id} </div>
-                                            <div class="col l12">Libellé: indefini</div>
-                                            <div class="col l12">Catégorie: indefini</div>
+                                            <div class="col l12">Libellé: ${info_selon_index[i].libelle }</div>
+                                            <div class="col l12">Catégorie: ${info_selon_index[i].categorie }</div>
                                         </div>
                                     </td>
                                     <td>
@@ -476,10 +506,10 @@
                                     <td>
                                         <div class="row">
                                                 <div class="col l12">
-                                                    <button class="transparent waves-effect waves-light" style="font-size:10px"><i class="fa fa-edit"></i></button>
+                                                    <button class="transparent waves-effect waves-light" style="font-size:10px" value="${i}" onclick="modifier_equipement(this);"><i class="fa fa-edit"></i></button>
                                                 </div>
                                                 <div class="col l12">
-                                                    <button class="transparent waves-effect waves-light" style="font-size:10px "><i class="fa fa-trash"></i></button>
+                                                    <button class="transparent waves-effect waves-light" style="font-size:10px " value="${i}"><i class="fa fa-trash"></i></button>
                                                 </div>
                                         </div>
                                     </td>
@@ -498,7 +528,14 @@
                     afficher_search($('#search').val(),search_liste[parseInt(search_type)])
                 }
                 
-                
+                function modifier_equipement(button)
+                {
+                    let equipement = info_equipements.rows[parseInt(button.value)];
+                    document.getElementById('ins_id').value = equipement.id;
+                    document.getElementById('ins_libelle').value = info_selon_index[parseInt(button.value)].libelle;
+                    document.getElementById('label_id').className = 'active';
+                    document.getElementById('label_libelle').className = 'active';
+                }
                
                 </script>
                
@@ -530,13 +567,31 @@
                         <h5 class="white-text">Nouvel equipement / <br> Modification</h5>
                     </div>
                     <div class="input-field col s10">
-                        <input type="text">
+                        <label id="label_id" for="ins_id">ID</label>
+                        <input type="text" id="ins_id" name="ins_id" readonly="readonly">
                     </div>
                     <div class="input-field col s10">
-                        <input type="text">
+                        <script>
+                            function categorie_check(select)
+                            {
+                                if (!select.value.localeCompare("0"))
+                                    document.getElementById("nouveau_categorie").className = "";
+                                else
+                                    document.getElementById("nouveau_categorie").className = "hide";
+                            }
+                        </script>
+                            
+                            <select name="ins_categorie" id="ins_categorie" onchange="categorie_check(this);">
+                                <option value="1"></option>
+                                <option value="0">Autre</option>
+                            </select>
+                            <label>Categorie </label>
+                            <input class="hide" type="text" name="nouveau_categorie" id="nouveau_categorie" value=""/>
+                        
                     </div>
                     <div class="input-field col s10">
-                        <input type="text">
+                        <label id="label_libelle" for="ins_libelle">Libellé</label>
+                        <input type="text" id="ins_libelle" name="ins_libelle">
                     </div>
                     <div class="col s10">
                         <center><input type="button" class="btn wave-light" value="Ajouter"></center>
