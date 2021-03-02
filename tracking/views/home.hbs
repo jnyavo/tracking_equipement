@@ -212,6 +212,20 @@
                     var update = true;
                     var viderMap = false;
                     var url = '/crate/equipement';
+                    options = []
+                    options[0] = document.createElement('option');
+                    options[0].value = "0";
+                    options[0].innerHTML = "Autre";
+
+                    for (i=0;i<categories.length;i++)
+                    {
+                            options[parseInt(categories[i].id_categorie)] = document.createElement('option');
+                            options[parseInt(categories[i].id_categorie)].value = categories[i].id_categorie;
+                            options[parseInt(categories[i].id_categorie)].innerHTML = categories[i].libelle;
+                            document.getElementById("ins_categorie").appendChild(options[parseInt(categories[i].id_categorie)]);
+
+                    }
+                            
                     var tracking = window.setInterval(()=>{
                        
                         
@@ -362,7 +376,7 @@
                     },1000);
                     function afficher_surMap()
                     {
-                        map.addImage('pulsing-dot', pulsingDot, { pixelRatio: 2 });
+                        //map.addImage('pulsing-dot', pulsingDot, { pixelRatio: 2 });
                         for (i=0;i<info_equipements.rowCount;i++)
                                  {
                                     map.addSource(info_equipements.rows[i].id, { type: 'geojson', data: 'https://wanderdrone.appspot.com/' });
@@ -579,6 +593,8 @@
                                 else
                                     document.getElementById("nouveau_categorie").className = "hide";
                             }
+                            
+                            
                         </script>
                             
                             <select name="ins_categorie" id="ins_categorie" onchange="categorie_check(this);">
