@@ -547,6 +547,7 @@
                     let equipement = info_equipements.rows[parseInt(button.value)];
                     document.getElementById('ins_id').value = equipement.id;
                     document.getElementById('ins_libelle').value = info_selon_index[parseInt(button.value)].libelle;
+                    document.getElementById("ins_categorie").value = info_selon_index[parseInt(button.value)]].categorie;
                     document.getElementById('label_id').className = 'active';
                     document.getElementById('label_libelle').className = 'active';
                 }
