@@ -26,34 +26,49 @@
 
         <div class="row">
             <div class="col s12">
-                <div class="container">
+                <div class="container" style="margin-top: 4vh; margin-bottom: 4vh">
                     <div class="row">
+                        <h5 class="white-text">Equipements detectés</h5>
                     <div class="col s12">
-                        <select></select>
+                        
+                            <div class="input-field">
+                                <input id="search" type="search" required>
+                                <label class="label-icon" for="search"><i class="material-icons">search</i></label>
+                                <i class="material-icons"  onclick="document.getElementById('search').value =''; doneTyping(); ">close</i>
+                            </div>
+                        
                     </div>
                     <div class="col s12">
-                       <center><button onclick="" class="green darken-1 waves-effect waves-light btn">Select</button></center> 
+                        <select id="search_type">
+                            <option value="1">ID</option>
+                            <option value="2">Libellé</option>
+                            <option value="3">Catégorie</option>
+                            <option value="4">Salle</option>
+                            </select>
                     </div>
+                    
+                    
                 </div>
+                
                 </div>
+                <div class="col s12 card-panel" style="height: 250px; overflow-y:scroll; background-color:inherit">
+                       <table id="liste_detecte">
+                           
+                       </table>
+                    </div>
                 
                 
                 
             </div>
             <footer class="page-footer" style="background-color: inherit;">
-                <div class="container">
+                <div class="container" style="margin-top: 1vh;">
                     <div class="col l12">
                       
                             <center><button class="blue waves-effect waves-light btn" style="margin: 5px;">Modifier icon</button></center> 
                        
                         
                     </div>
-                    <div class="col l12">
-                     
-                            <center><button class="waves-effect waves-light btn" style="margin: 5px;">Modifier nom</button></center>
-                        
-                         
-                    </div>
+                    
                     <div class="col l12">
                     
                             <center><button class="red waves-effect waves-light btn" style="margin: 5px;">Supprimer</button></center> 
@@ -86,9 +101,9 @@
 
              <div class="col s12" id='map' style='border: 1px solid black; height: 400px;'> <!-- Note that "m8 l9" was added -->
                 
-          
+                <script src="js\jquery-3.4.1.js"></script>
                 <script>
-
+                    
                     mapboxgl.accessToken = 'pk.eyJ1Ijoiam55YXZvIiwiYSI6ImNrazlxeDFrbTBnMXkydW51enp6b2I4ZTQifQ.-S7B4qwXN1dbdguZ7Jrp8g';
                     var map = new mapboxgl.Map({
                     container: 'map',
@@ -168,10 +183,10 @@
                         }
                     };
                     
-                  
+                    var layerId = 'streets-v11';
                     
                     function switchLayer(layer) {
-                        var layerId = layer.id;
+                        layerId = layer.id;
                         map.setStyle('mapbox://styles/mapbox/' + layerId);
                     }
                     
@@ -182,72 +197,405 @@
                         document.getElementById('latitude').value = coord.lat;
                     }, 100);
 
-                   
+                    /*
+                    window.setInterval(()=>{
+                        var coord = map.getCenter();
+                        var marker = new mapboxgl.Marker()
+                            .setLngLat([coord.lng, coord.lat])
+                            .addTo(map);
+                    },100);
+                    */
+                    var info_equipements = {};
+                    var info_selon_index = [];
+                    var static_equipements  = [];
+                    var categories = [];
+                    var update = true;
+                    var viderMap = false;
+                    var url = '/crate/equipement';
+                    options = []
+                    options[0] = document.createElement('option');
+                    options[0].value = "0";
+                    options[0].innerHTML = "Autre";
                     
-                    //simulateur de deplacement
-                    function simulation(){
 
-                        //url de l'API http CrateDB
-                        var url = 'http://localhost:4200/_sql';
 
-                        map.addSource('drone', { type: 'geojson', data: 'https://wanderdrone.appspot.com/' });
-                        map.addImage('pulsing-dot', pulsingDot, { pixelRatio: 2 });
-                        map.addLayer({
-                            'id': 'drone',
-                            'type': 'symbol',
-                            'source': 'drone',
-                            'layout': {
-                                'icon-image': 'pulsing-dot'
-                                }
-                            });
-                        
+                   
+                            
+                    var tracking = window.setInterval(()=>{
+                       
                         
                         var request = new XMLHttpRequest();
-
-                        window.setInterval(function () {
-                            // make a GET request to parse the GeoJSON at the url
-                            request.open('POST', url, true);
-                            request.setRequestHeader('Content-Type', 'application/json');
+                        request.open('GET', url, true);
+                        request.onload = function () {
+                            if (this.status >= 200 && this.status < 400) {
+                               
+                                info_equipements = JSON.parse(this.response);
+                                
+                            }
+                        };
                         
+                        request.send();
 
-                            request.onload = function () {
-                                if (this.status >= 200 && this.status < 400) {
-                                    // retrieve the JSON from the response
-                                    var res = JSON.parse(this.response);
-                                    var point = res.rows[0][1];
-                                    console.log(point);
-                                  
+                    },1000);
+
+                    function viderListeCategorie()
+                    {
+                        let select = document.getElementById('ins_categorie');
+                        select.innerHTML = '';
+                        let vide = document.createElement('option');
+                        vide.value = "-1";
+                        select.appendChild(vide);
+
+                    }
+                    var db_sql = window.setInterval(()=>{
+                        var request = new XMLHttpRequest();
+                        request.open('GET','/sql/equipement',true);
+                        request.onload = function() {
+                            if (this.status >= 200 && this.status < 400) {
+                               
+                                static_equipements = JSON.parse(this.response);
+                                
+                            }
+                        };
+                        request.send();
+                        
+                        request = new XMLHttpRequest();
+                        request.open('GET','/sql/categorie',true);
+                        request.onload = function() {
+                            if (this.status >= 200 && this.status < 400) {
+                               
+                                categories = JSON.parse(this.response);
+                                if($("#ins_categorie").val() != -1)
+                                    return;
+                                viderListeCategorie();
+                                for (i=0;i<categories.length;i++)
+                                {
+                                    
+                                    options[parseInt(categories[i].id_categorie)] = document.createElement('option');
+                                    options[parseInt(categories[i].id_categorie)].value = categories[i].id_categorie;
+                                    options[parseInt(categories[i].id_categorie)].innerHTML = categories[i].libelle;
+                                    //console.log(options[parseInt(categories[i].id_categorie)] + " appended");
+                                    document.getElementById("ins_categorie").appendChild(options[parseInt(categories[i].id_categorie)]);
+
+                                }
+                                document.getElementById("ins_categorie").appendChild(options[0]);
+                                $('select').formSelect();
+                                
+                            }
+                        };
+                        request.send();
+                    },10000);
+                    //liste des ID
+                    var liste = [];
+                    
+                    var last_length = liste.length;
+
+                    var maj_liste = window.setInterval(()=>{
+                        if(!jQuery.isEmptyObject(info_equipements))
+                        {
+                            var temp = [...info_equipements.rows];
+                            for(i=0;i<liste.rowCount;i++)
+                            {
+                                delete temp[i].position;
+                                delete temp[i].salle;
+                            }
+                            liste = [...temp];
+
+                          
+                           }
+                    },2000);
+
+
+                    var maj_affichage = window.setInterval(()=>{
+                        //Mise à jour affichage 
+                        if($("#search").val() == "")
+                        if (update)
+                        {
+                            var table = document.getElementById('liste_detecte');
+                            table.innerHTML='';
+                            for(i=0;i<info_equipements.rowCount;i++)
+                            {
+                                //Une ligne sur le tableau
+                                
+                                var equip = document.createElement('tr');
+                                var libelle;
+                                var categorie;
+                                var id_categorie;
+                                let equipement = static_equipements.filter((element)=>{
+                                    
+                                    return !liste[i].id.localeCompare(element.id_equipement);
+                                    });
+                                
+                                if (equipement.length == 0)
+                                {
+                                    libelle = 'indefini';
+                                    categorie = 'indefini';
+                                    id_categorie = -1;
+                                } 
+                                else
+                                {
+                                    
+                                    libelle = equipement[0].libelle;
+                                    
+                                    categorie = categories.filter((element)=>{return (parseInt(equipement[0].id_categorie) == parseInt(element.id_categorie))})[0].libelle;
+                                    id_categorie = equipement[0].id_categorie;
+                                }   
+                                    info_selon_index[i] = {};
+                                    info_selon_index[i].categorie = categorie;
+                                    info_selon_index[i].libelle = libelle;
+                                    info_selon_index[i].id_categorie = id_categorie;
+                                    
+                                equip.innerHTML = `
+                                <tr>
+                                    <td>
+                                        <div class="row">
+                                            <div class="col l12">ID: ${liste[i].id} </div>
+                                            <div class="col l12">Libellé: ${libelle}</div>
+                                            <div class="col l12">Catégorie: ${categorie}</div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="row">
+                                            <div class="col l12">Salle</div>
+                                            <div class="col l12" id="salle_${liste[i].id}"> ${info_equipements.rows[i].salle}</div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="row">
+                                                <div class="col l12">
+                                                    <button class="transparent waves-effect waves-light" style="font-size:10px" value="${i}" onclick="modifier_equipement(this)"><i class="fa fa-edit"></i></button>
+                                                </div>
+                                                <div class="col l12">
+                                                    <button class="transparent waves-effect waves-light" style="font-size:10px" value="${i}" onclick="supprimer_equipement(this)"><i class="fa fa-trash"></i></button>
+                                                </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                `;
+                                table.appendChild(equip);
+
+                                           
+
+                            }
+                            last_length = liste.length;
+                         
+                            
+                        }
+                        else 
+                        {
+                             for(i=0;i<info_equipements.rowCount;i++)
+                            {
+                                var id_salle = document.getElementById(`salle_${info_equipements.rows[i].id}`)
+                                try
+                                {
+                                    id_salle.innerText = info_equipements.rows[i].salle || '';
+                                }
+                                catch(TypeError)
+                                {
+                                    
+                                }
+                            }
+                        }
+                    },1000);
+                    function afficher_surMap()
+                    {
+                        //map.addImage('pulsing-dot', pulsingDot, { pixelRatio: 2 });
+                        for (i=0;i<info_equipements.rowCount;i++)
+                                 {
+                                    map.addSource(info_equipements.rows[i].id, { type: 'geojson', data: 'https://wanderdrone.appspot.com/' });
+                                    
+                                    map.addLayer({
+                                    'id': info_equipements.rows[i].id,
+                                    'type': 'symbol',
+                                    'source': info_equipements.rows[i].id,
+                                    'layout': {
+                                        'icon-image': 'pulsing-dot'
+                                        }
+                                    });
+                                 }
+
+
+                        window.setInterval(()=>{
+                           
+                             if(liste.length != last_length)
+                             {
+                                 for (i=0;i<info_equipements.rowCount;i++)
+                                 {
+                                        map.setStyle('mapbox://styles/mapbox/' + layerId);
+                                        viderMap = true;
+                                        map.addSource(info_equipements.rows[i].id, { type: 'geojson', data: 'https://wanderdrone.appspot.com/' });
+                                        //map.addImage('pulsing-dot', pulsingDot, { pixelRatio: 2 });
+                                        map.addLayer({
+                                        'id': info_equipements.rows[i].id,
+                                        'type': 'symbol',
+                                        'source': info_equipements.rows[i].id,
+                                        'layout': {
+                                            'icon-image': 'pulsing-dot'
+                                            }
+                                        });
+                                    
+                                    
+                                 }
+                             }
+
+                            
+
+                        },1000);
+
+                        window.setInterval(()=>{
+                           
+                
+                                    
+
+                                for(i=0;i<info_equipements.rowCount; i++)
+                                {
+                                    if (map.getSource(info_equipements.rows[i].id) == undefined)
+                                        continue;
+                                    var point = [info_equipements.rows[i].position.x,info_equipements.rows[i].position.y];
+                                    
+
                                     // update the drone symbol's location on the map
-                                    map.getSource('drone').setData({
+                                    map.getSource(info_equipements.rows[i].id).setData({
                                         "geometry": 
                                             {
                                             "type": "Point", 
-                                             "coordinates": point}, 
-                                             "type": "Feature", 
-                                             "properties": {}
-                                             });
-                                    
-                                    /*
-                                    // fly the map to the drone's current location
-                                    map.flyTo({
-                                        center: point,
-                                        speed: 0.5
-                                    }
-                                   
-                                    )
-                                     */
+                                            "coordinates": point}, 
+                                            "type": "Feature", 
+                                            "properties": {}
+                                            });
                                 }
-                            };
-                            request.send(JSON.stringify({
-                                stmt: 'select id,position from equipement'
-                            }));
-                        }, 500);
+                                    
+                                    
+                                
+                            
                         
-                       
                         
+                        
+                            },1000);
+                    
                     }
+                  
+                    map.on('load', () => {
+                        afficher_surMap();
+                        
+                    });
+                    map.on('style.load', function () {
+                        //console.log("stylechanged");
+                        map.addImage('pulsing-dot', pulsingDot, { pixelRatio: 2 });
+                        if (!viderMap) afficher_surMap();
+                        else viderMap = false;
+                    });
+                 /*
+                    Script de recherche
+                */
+                                   
+                var typingTimer;                //timer identifier
+                var doneTypingInterval = 500;  //time in ms, 5 second for example
+                //var $('#search') = $('#search');
+
+                //on keyup, start the countdown
+                $('#search').on('keyup', function () {
+                clearTimeout(typingTimer);
+                typingTimer = setTimeout(doneTyping, doneTypingInterval);
+                });
+
+                //on keydown, clear the countdown 
+                $('#search').on('keydown', function () {
+                clearTimeout(typingTimer);
+                });
+
+               
+                window.setInterval(()=>{
+                    if(!update)
+                    setTimeout(()=>{
+                        update = true;
+                    },5000)
+                },1000)
+                var search_liste = ['','id','libelle','categorie','salle'];
+                function afficher_search(text,type)
+                {
+                    update = false;
+                    
+                    var table = document.getElementById('liste_detecte');
+                    table.innerHTML='';
+                    for(i=0;i<info_equipements.rowCount;i++)
+                            {
+                                
+                                if(text.localeCompare((info_equipements.rows[i][type] || "").substring(0,text.length)))
+                                    if(text.localeCompare((info_selon_index[i][type] || "").substring(0,text.length)))
+                                        continue;
+                                  
+                                var equip = document.createElement('tr');
+                                
+                               
+                                equip.innerHTML = `
+                                <tr>
+                                    <td>
+                                        <div class="row">
+                                            <div class="col l12">ID: ${liste[i].id} </div>
+                                            <div class="col l12">Libellé: ${info_selon_index[i].libelle }</div>
+                                            <div class="col l12">Catégorie: ${info_selon_index[i].categorie }</div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="row">
+                                            <div class="col l12">Salle</div>
+                                            <div class="col l12" id="salle_${liste[i].id}"> ${info_equipements.rows[i].salle}</div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="row">
+                                                <div class="col l12">
+                                                    <button class="transparent waves-effect waves-light" style="font-size:10px" value="${i}" onclick="modifier_equipement(this);"><i class="fa fa-edit"></i></button>
+                                                </div>
+                                                <div class="col l12">
+                                                    <button class="transparent waves-effect waves-light" style="font-size:10px" value="${i}" onclick="supprimer_equipement(this);"><i class="fa fa-trash"></i></button>
+                                                </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                `;
+                                table.appendChild(equip);
+
+                                           
+
+                            }
+                            last_length = liste.length;
+                }
+
+                function doneTyping () {
+                    var search_type = document.getElementById('search_type').value;
+                    afficher_search($('#search').val(),search_liste[parseInt(search_type)])
+                }
                 
+                function modifier_equipement(button)
+                {
+                    let equipement = info_equipements.rows[parseInt(button.value)];
+                    document.getElementById('ins_id').value = equipement.id;
+                    document.getElementById('ins_libelle').value = info_selon_index[parseInt(button.value)].libelle;
+                    $("#ins_categorie").val(parseInt(info_selon_index[parseInt(button.value)].id_categorie)).change();
+                    $('select').formSelect();
+                    document.getElementById('label_id').className = 'active';
+                    document.getElementById('label_libelle').className = 'active';
+                }
+                function supprimer_equipement(button)
+                {
+                    console.log("id = " + button.value);
+                    let equipement = info_equipements.rows[parseInt(button.value)];
+                    var request = new XMLHttpRequest();
+                    request.open('POST', '/crate/suppression', true);
+                    request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+                    request.onload = function () 
+                    {
+                        if (this.status >= 200 && this.status < 400)
+                        {}
+                    }
+                    request.send(JSON.stringify({id_equipement: equipement.id}));
+
+
+                }
                 </script>
+               
             </div>
             <!-- -->
             <div class="col s12">
@@ -271,21 +619,79 @@
        
         <div class="col l3 card-panel hide-on-med-and-down" style="background-color: rgba(204, 169, 169, 0.062);"> 
             <div class="row">
-                <form action="#" class="col 9" style="margin-left: 2vw;">
+                <form action="#" onsubmit="return false;"class="col 9" style="margin-left: 2vw;">
                     <div class="col s12">
-                        <h5 class="white-text">Nouvel equipement / <br> Modification</h5>
+                        <h5 class="white-text">Nouvel équipement / <br> Modification</h5>
                     </div>
                     <div class="input-field col s10">
-                        <input type="text">
+                        <label id="label_id" for="ins_id">ID</label>
+                        <input type="text" id="ins_id" name="ins_id" readonly="readonly">
                     </div>
                     <div class="input-field col s10">
-                        <input type="text">
+                       
+                            <select name="ins_categorie" id="ins_categorie" onchange="categorie_check(this);">
+                                <option value="-1"></option>
+                            
+                            </select>
+                            
+                            <label>Categorie </label>
+                            <input class="hide" type="text" name="nouveau_categorie" id="nouveau_categorie" value=""/>
+                            <script>
+                            
+                                function categorie_check(select)
+                                {
+                                    if (!select.value.localeCompare("0"))
+                                        document.getElementById("nouveau_categorie").className = "";
+                                    else
+                                        document.getElementById("nouveau_categorie").className = "hide";
+                                }
+
+
+                                function send()
+                                {
+                                    
+                                    var request = new XMLHttpRequest();
+                                    var ins_id = document.getElementById("ins_id").value;
+                                    var ins_categorie = document.getElementById("ins_categorie").value;
+                                    var nouveau_categorie = document.getElementById("nouveau_categorie").value;
+                                    var ins_libelle = document.getElementById("ins_libelle").value;
+                                    if (ins_categorie == -1)
+                                        return
+                                    else
+                                    if(ins_categorie == 0)
+                                    if(nouveau_categorie.replace(' ','') == "")
+                                        return
+                                    if(ins_libelle.replace(' ','') == "")
+                                        return;
+                                    request.open('POST', '/sql/equipment', true);
+                                    request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+                                    request.onload = () =>
+                                    {
+                                        
+                                            document.getElementById("ins_id").value = "";
+                                            document.getElementById("ins_categorie").value = "";
+                                            document.getElementById("nouveau_categorie").value = "";
+                                            document.getElementById("ins_libelle").value = "";
+                                            $("#ins_categorie").val(-1).change();
+                                            $('select').formSelect();
+                                            
+                                    
+                                        
+                                    };
+                                    request.send(JSON.stringify({ins_id,ins_categorie,nouveau_categorie,ins_libelle}));
+                                }
+                                
+                                
+                            
+                            </script>
+                            
                     </div>
                     <div class="input-field col s10">
-                        <input type="text">
+                        <label id="label_libelle" for="ins_libelle">Libellé</label>
+                        <input type="text" id="ins_libelle" name="ins_libelle">
                     </div>
                     <div class="col s10">
-                        <center><input type="button" class="btn wave-light" value="Ajouter"></center>
+                        <center><input type="button" class="btn wave-light" value="Ajouter" onclick="send();" ></center>
                     </div>
                 </form>
                 

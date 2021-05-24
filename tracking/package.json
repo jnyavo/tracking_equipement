@@ -13,12 +13,12 @@
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.5",
+    "cratejs": "^0.2.13",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "express-session": "^1.17.1",
-    "hbs": "^4.1.1",
+    "hbs": "^4.1.2",
     "jsonwebtoken": "^8.5.1",
-    "mapbox-gl": "^2.0.1",
     "mysql": "^2.18.1",
     "nodemon": "^2.0.6",
     "pg": "^8.5.1"
