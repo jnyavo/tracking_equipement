@@ -1,5 +1,14 @@
 const express = require("express");
 const router = express.Router();
+const mysql = require("mysql");
+
+const db = mysql.createConnection({
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DATABASE
+
+});
 
 //Affichage de index.hbs 
 router.get("/", (req,res) => {
@@ -34,8 +43,61 @@ router.get("/home",(req,res) => {
     }
 
     res.render('home', {username: req.session.username});
-})
+});
 
+router.get("/register-admin",(req,res)=>{
+    if(!req.session.username)
+    {
+        //l'utilisateur ne s'est pas loggé
+        res.status(401).redirect('/');
+        return;
+    }
+    res.render('register-admin',{username: req.session.username});
+});
+router.get("/me",(req,res)=>{
+    if(!req.session.username)
+    {
+        //l'utilisateur ne s'est pas loggé
+        res.status(401).redirect('/');
+        return;
+    }
+    db.query("SELECT * FROM users WHERE username=?",[req.session.username],(error,results)=>{
+        if(error)
+        {
+            console.log(error);
+        }
+        else
+        {
+            console.log(results);
+            res.render('register-admin',{username: req.session.username, form: results[0]});
+        }
+        
+    });
+    
+});
+
+router.get("/liste",(req,res)=>{
+    if(!req.session.username)
+    {
+        //l'utilisateur ne s'est pas loggé
+        res.status(401).redirect('/');
+        return;
+    }
+    
+    db.query("SELECT equipement.id_equipement, categorie.libelle AS libelle_categorie, equipement.libelle as libelle_equipement FROM equipement INNER JOIN categorie ON equipement.id_categorie = categorie.id_categorie",(error,results)=>{
+        if(error)
+        {
+            console.log(error);
+            res.render('liste',{username: req.session.username});
+        }
+        else
+        {
+            res.render('liste',{username: req.session.username,equipements: results});
+        }
+            
+    });
+    
+});
 
 
 module.exports = router;

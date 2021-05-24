@@ -183,7 +183,7 @@
                         }
                     };
                     
-                    var layerId = '';
+                    var layerId = 'streets-v11';
                     
                     function switchLayer(layer) {
                         layerId = layer.id;
@@ -216,15 +216,10 @@
                     options[0] = document.createElement('option');
                     options[0].value = "0";
                     options[0].innerHTML = "Autre";
+                    
 
-                    for (i=0;i<categories.length;i++)
-                    {
-                            options[parseInt(categories[i].id_categorie)] = document.createElement('option');
-                            options[parseInt(categories[i].id_categorie)].value = categories[i].id_categorie;
-                            options[parseInt(categories[i].id_categorie)].innerHTML = categories[i].libelle;
-                            document.getElementById("ins_categorie").appendChild(options[parseInt(categories[i].id_categorie)]);
 
-                    }
+                   
                             
                     var tracking = window.setInterval(()=>{
                        
@@ -242,6 +237,16 @@
                         request.send();
 
                     },1000);
+
+                    function viderListeCategorie()
+                    {
+                        let select = document.getElementById('ins_categorie');
+                        select.innerHTML = '';
+                        let vide = document.createElement('option');
+                        vide.value = "-1";
+                        select.appendChild(vide);
+
+                    }
                     var db_sql = window.setInterval(()=>{
                         var request = new XMLHttpRequest();
                         request.open('GET','/sql/equipement',true);
@@ -260,6 +265,21 @@
                             if (this.status >= 200 && this.status < 400) {
                                
                                 categories = JSON.parse(this.response);
+                                if($("#ins_categorie").val() != -1)
+                                    return;
+                                viderListeCategorie();
+                                for (i=0;i<categories.length;i++)
+                                {
+                                    
+                                    options[parseInt(categories[i].id_categorie)] = document.createElement('option');
+                                    options[parseInt(categories[i].id_categorie)].value = categories[i].id_categorie;
+                                    options[parseInt(categories[i].id_categorie)].innerHTML = categories[i].libelle;
+                                    //console.log(options[parseInt(categories[i].id_categorie)] + " appended");
+                                    document.getElementById("ins_categorie").appendChild(options[parseInt(categories[i].id_categorie)]);
+
+                                }
+                                document.getElementById("ins_categorie").appendChild(options[0]);
+                                $('select').formSelect();
                                 
                             }
                         };
@@ -288,10 +308,8 @@
 
                     var maj_affichage = window.setInterval(()=>{
                         //Mise à jour affichage 
-                         if (!update)
-                            return;
-
-                        if(liste.length != last_length)
+                        if($("#search").val() == "")
+                        if (update)
                         {
                             var table = document.getElementById('liste_detecte');
                             table.innerHTML='';
@@ -302,26 +320,31 @@
                                 var equip = document.createElement('tr');
                                 var libelle;
                                 var categorie;
+                                var id_categorie;
                                 let equipement = static_equipements.filter((element)=>{
+                                    
                                     return !liste[i].id.localeCompare(element.id_equipement);
                                     });
-                
+                                
                                 if (equipement.length == 0)
                                 {
                                     libelle = 'indefini';
                                     categorie = 'indefini';
+                                    id_categorie = -1;
                                 } 
                                 else
                                 {
-                                    libelle = equipement.libelle;
                                     
-                                    categorie = categories.filter((element)=>{return !equipement.id_categorie.localeCompare(element.id_categorie);})[0].libelle;
+                                    libelle = equipement[0].libelle;
                                     
+                                    categorie = categories.filter((element)=>{return (parseInt(equipement[0].id_categorie) == parseInt(element.id_categorie))})[0].libelle;
+                                    id_categorie = equipement[0].id_categorie;
                                 }   
                                     info_selon_index[i] = {};
                                     info_selon_index[i].categorie = categorie;
                                     info_selon_index[i].libelle = libelle;
-                                    info_selon_index[i].id_categorie = equipement.id_categorie;
+                                    info_selon_index[i].id_categorie = id_categorie;
+                                    
                                 equip.innerHTML = `
                                 <tr>
                                     <td>
@@ -343,7 +366,7 @@
                                                     <button class="transparent waves-effect waves-light" style="font-size:10px" value="${i}" onclick="modifier_equipement(this)"><i class="fa fa-edit"></i></button>
                                                 </div>
                                                 <div class="col l12">
-                                                    <button class="transparent waves-effect waves-light" style="font-size:10px value="${i}""><i class="fa fa-trash"></i></button>
+                                                    <button class="transparent waves-effect waves-light" style="font-size:10px" value="${i}" onclick="supprimer_equipement(this)"><i class="fa fa-trash"></i></button>
                                                 </div>
                                         </div>
                                     </td>
@@ -401,7 +424,7 @@
                                         map.setStyle('mapbox://styles/mapbox/' + layerId);
                                         viderMap = true;
                                         map.addSource(info_equipements.rows[i].id, { type: 'geojson', data: 'https://wanderdrone.appspot.com/' });
-                                        map.addImage('pulsing-dot', pulsingDot, { pixelRatio: 2 });
+                                        //map.addImage('pulsing-dot', pulsingDot, { pixelRatio: 2 });
                                         map.addLayer({
                                         'id': info_equipements.rows[i].id,
                                         'type': 'symbol',
@@ -426,9 +449,11 @@
 
                                 for(i=0;i<info_equipements.rowCount; i++)
                                 {
+                                    if (map.getSource(info_equipements.rows[i].id) == undefined)
+                                        continue;
                                     var point = [info_equipements.rows[i].position.x,info_equipements.rows[i].position.y];
                                     
-                                
+
                                     // update the drone symbol's location on the map
                                     map.getSource(info_equipements.rows[i].id).setData({
                                         "geometry": 
@@ -452,10 +477,11 @@
                   
                     map.on('load', () => {
                         afficher_surMap();
-                    
+                        
                     });
                     map.on('style.load', function () {
-                    
+                        //console.log("stylechanged");
+                        map.addImage('pulsing-dot', pulsingDot, { pixelRatio: 2 });
                         if (!viderMap) afficher_surMap();
                         else viderMap = false;
                     });
@@ -523,7 +549,7 @@
                                                     <button class="transparent waves-effect waves-light" style="font-size:10px" value="${i}" onclick="modifier_equipement(this);"><i class="fa fa-edit"></i></button>
                                                 </div>
                                                 <div class="col l12">
-                                                    <button class="transparent waves-effect waves-light" style="font-size:10px " value="${i}"><i class="fa fa-trash"></i></button>
+                                                    <button class="transparent waves-effect waves-light" style="font-size:10px" value="${i}" onclick="supprimer_equipement(this);"><i class="fa fa-trash"></i></button>
                                                 </div>
                                         </div>
                                     </td>
@@ -547,11 +573,27 @@
                     let equipement = info_equipements.rows[parseInt(button.value)];
                     document.getElementById('ins_id').value = equipement.id;
                     document.getElementById('ins_libelle').value = info_selon_index[parseInt(button.value)].libelle;
-                    document.getElementById("ins_categorie").value = info_selon_index[parseInt(button.value)]].categorie;
+                    $("#ins_categorie").val(parseInt(info_selon_index[parseInt(button.value)].id_categorie)).change();
+                    $('select').formSelect();
                     document.getElementById('label_id').className = 'active';
                     document.getElementById('label_libelle').className = 'active';
                 }
-               
+                function supprimer_equipement(button)
+                {
+                    console.log("id = " + button.value);
+                    let equipement = info_equipements.rows[parseInt(button.value)];
+                    var request = new XMLHttpRequest();
+                    request.open('POST', '/crate/suppression', true);
+                    request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+                    request.onload = function () 
+                    {
+                        if (this.status >= 200 && this.status < 400)
+                        {}
+                    }
+                    request.send(JSON.stringify({id_equipement: equipement.id}));
+
+
+                }
                 </script>
                
             </div>
@@ -577,41 +619,79 @@
        
         <div class="col l3 card-panel hide-on-med-and-down" style="background-color: rgba(204, 169, 169, 0.062);"> 
             <div class="row">
-                <form action="#" class="col 9" style="margin-left: 2vw;">
+                <form action="#" onsubmit="return false;"class="col 9" style="margin-left: 2vw;">
                     <div class="col s12">
-                        <h5 class="white-text">Nouvel equipement / <br> Modification</h5>
+                        <h5 class="white-text">Nouvel équipement / <br> Modification</h5>
                     </div>
                     <div class="input-field col s10">
                         <label id="label_id" for="ins_id">ID</label>
                         <input type="text" id="ins_id" name="ins_id" readonly="readonly">
                     </div>
                     <div class="input-field col s10">
-                        <script>
-                            function categorie_check(select)
-                            {
-                                if (!select.value.localeCompare("0"))
-                                    document.getElementById("nouveau_categorie").className = "";
-                                else
-                                    document.getElementById("nouveau_categorie").className = "hide";
-                            }
-                            
-                            
-                        </script>
-                            
+                       
                             <select name="ins_categorie" id="ins_categorie" onchange="categorie_check(this);">
-                                <option value="1"></option>
-                                <option value="0">Autre</option>
+                                <option value="-1"></option>
+                            
                             </select>
+                            
                             <label>Categorie </label>
                             <input class="hide" type="text" name="nouveau_categorie" id="nouveau_categorie" value=""/>
-                        
+                            <script>
+                            
+                                function categorie_check(select)
+                                {
+                                    if (!select.value.localeCompare("0"))
+                                        document.getElementById("nouveau_categorie").className = "";
+                                    else
+                                        document.getElementById("nouveau_categorie").className = "hide";
+                                }
+
+
+                                function send()
+                                {
+                                    
+                                    var request = new XMLHttpRequest();
+                                    var ins_id = document.getElementById("ins_id").value;
+                                    var ins_categorie = document.getElementById("ins_categorie").value;
+                                    var nouveau_categorie = document.getElementById("nouveau_categorie").value;
+                                    var ins_libelle = document.getElementById("ins_libelle").value;
+                                    if (ins_categorie == -1)
+                                        return
+                                    else
+                                    if(ins_categorie == 0)
+                                    if(nouveau_categorie.replace(' ','') == "")
+                                        return
+                                    if(ins_libelle.replace(' ','') == "")
+                                        return;
+                                    request.open('POST', '/sql/equipment', true);
+                                    request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+                                    request.onload = () =>
+                                    {
+                                        
+                                            document.getElementById("ins_id").value = "";
+                                            document.getElementById("ins_categorie").value = "";
+                                            document.getElementById("nouveau_categorie").value = "";
+                                            document.getElementById("ins_libelle").value = "";
+                                            $("#ins_categorie").val(-1).change();
+                                            $('select').formSelect();
+                                            
+                                    
+                                        
+                                    };
+                                    request.send(JSON.stringify({ins_id,ins_categorie,nouveau_categorie,ins_libelle}));
+                                }
+                                
+                                
+                            
+                            </script>
+                            
                     </div>
                     <div class="input-field col s10">
                         <label id="label_libelle" for="ins_libelle">Libellé</label>
                         <input type="text" id="ins_libelle" name="ins_libelle">
                     </div>
                     <div class="col s10">
-                        <center><input type="button" class="btn wave-light" value="Ajouter"></center>
+                        <center><input type="button" class="btn wave-light" value="Ajouter" onclick="send();" ></center>
                     </div>
                 </form>
                 

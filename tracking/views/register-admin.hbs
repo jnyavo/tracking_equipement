@@ -1,18 +1,26 @@
-
 <!DOCTYPE html>
 <html lang="en">
 
+
 {{>head}}
 
-
-<style>
-    div.container{
-        background-color: rgba(0, 0, 0, 0.3);
-        padding: 50px;
-        border-radius: 10px;
-    }
-</style>
 <body style="background-image: url('img/bg2.jpg');">
+
+    <!-- -----------------------------------------Menu-------------------------------------------- -->
+    
+        {{>menu}}
+    <!--------------------------------------------------------------------------------------------->
+
+    <!-------------------------------------------En tête---------------------------------------------->
+    <div class="row"  style="background-color: rgba(20,20,20,0.3)">
+        <div class="col s12 white-text">
+            <h5>Tracking des équipements</h5>
+            <p>
+                Réalisé par <a href="#">JOHANESA Asandratry Ny Avo</a> 
+            </p>
+        </div>
+    </div>
+    <!--------------------------------------------------------------------------------------------->
     <div class="container">
         <div class="row">
          
@@ -123,9 +131,9 @@
 
 {{>maxlength}}
 
+    <!-------------------------------------------------------------------------------------------------------->
 
 
-   
-   {{> scripts}}
+    {{>scripts}}
 </body>
 </html>
