@@ -39,38 +39,139 @@
             </p>
         </div>
     </div>
+    <div class="container" style="margin-bottom: 0vh; bottom:0px;">
+        <div class="row" style="background-color: rgba(20, 20, 20, 0)">
+                <div class="col 6">
+                    <label for="debut">Debut</label>
+                    <input type="datetime-local" id="debut" name="debut">
+                    <label for="fin">Fin</label>
+                    <input type="datetime-local" id="fin" name = "fin">
+                </div>
+                <div class="col 3">
+                    <br>
+                    <br>
+                    <br>
+                    <button onclick="Trier('{{id}}')" class="btn blue"><i class="material-icons">search</i></button>
+                </div>
+                <div class="col 4">
+                    <br>
+                    <br>
+                    <br>
+                    <button onclick="Delete('{{id}}')" class="btn red"><i class="material-icons">delete</i></button>
+                </div>
+            </div>
+    </div>
+    
     <!--------------------------------------------------------------------------------------------->
     <div class="container" style="width:80%">
-        <form action="/sql/suppression" method="POST">
+        <form>
+            
             <table class="highlight white-text">
                 <thead>
                     <th>id_equipement</th>
-                    <th>libelle</th>
-                    <th>categorie</th>
+                    <th>salle</th>
+                    <th>position</th>
                     
-                    <th>Actions</th>
+                    <th>timestamp</th>
                 </thead>
-                <tbody>
-                    {{#each equipements}}
-                        <tr>
-                            <td>{{id_equipement}}</td>
-                            <td>{{libelle_equipement}}</td>
-                            <td>{{libelle_categorie}}</td>
-                            
-                            <td>
-                                <a href="/equipement?id={{id_equipement}}" class="btn waves-effect waves-light" >
-                                    <i class="material-icons">history</i>
-                                </a>
-                                
-                                <button type="submit" class="btn waves-effect waves-light red" value="{{id_equipement}}" name="id_equipement">
-                                    <i class="material-icons">delete</i>
-                                </button>
-                            </td>
-                        </tr>
-                        
-                    {{/each}}
+                <tbody id="tabBody">
+                    
                 </tbody>
-                
+                <script>
+                        function afficher_records(rows)
+                        {
+                             var tableau = document.getElementById("tabBody");
+                             tableau.innerHTML='';
+                                for (i =0;i<rows.length;i++)
+                                {
+                                    let ligne = document.createElement("tr");
+                                    time = parseInt(rows[i].timestamp);
+                                    time = new Date(time);
+                                    HTML = `
+                                        
+                                                <td>${rows[i].id}</td>
+                                                <td>${rows[i].salle}</td>
+                                                <td> x: ${rows[i].position.x}, y: ${rows[i].position.y}</td>
+                                                <td> ${time}</td>
+                                            
+
+                                            `;
+                                    ligne.innerHTML += HTML;
+                                    tableau.appendChild(ligne);
+
+                                }
+                        }
+                        function Trier(id)
+                        {
+                            debut = document.getElementById("debut").value;
+                            if (debut)
+                                debut = new Date(debut).getTime();
+                            fin = document.getElementById("fin").value;
+                            if(fin)
+                                fin = new Date(fin).getTime();
+
+                            getRecords(id,debut,fin);
+                        }
+                        function Delete(id)
+                        {
+                            debut = document.getElementById("debut").value;
+                            if (debut)
+                                debut = new Date(debut).getTime();
+                            fin = document.getElementById("fin").value;
+                            if(fin)
+                                fin = new Date(fin).getTime();
+
+                            deleteRecords(id,debut,fin);
+                            
+                        }
+                        function getRecords(id,debut=false,fin=false)
+                        {
+                            var request = new XMLHttpRequest();
+                            var rows = [];
+                            url = "/crate/equipement/" + id;
+                            if(debut)
+                                url += "?debut="+debut;
+                            if(fin)
+                                url += "&fin="+fin;
+
+                            request.open("GET",url,true);
+                            request.onload = function ()
+                            {
+                                console.log(this.response);
+                                if (this.status >= 200 && this.status < 400) 
+                                {
+                                    rows = JSON.parse(this.response).rows;
+                                    afficher_records(rows);
+                                    
+
+                                }
+                            }
+                            request.send();
+                            
+                            
+                        }
+                        function deleteRecords(id,debut=false,fin=false)
+                        {
+                            var request = new XMLHttpRequest();
+                            var rows = [];
+                            url = "/crate/equipement/" + id;
+                            if(debut)
+                                url += "?debut="+debut;
+                            if(fin)
+                                url += "&fin="+fin;
+
+                            request.open("DELETE",url,true);
+                            request.onload = function ()
+                            {
+                               
+                                window.setTimeout(()=>{ getRecords(id)},500);
+                            }
+                            request.send();
+                            
+                            
+                        }
+                        getRecords("{{id}}");
+                    </script>
             </table>
         </form>
         
@@ -91,30 +192,9 @@
         <form enctype="multipart/form-data" id="insertion_module" name="insertModule" action="modules/insertModule.php"  onsubmit="return test_module();" method="post"  accept-charset="utf-8">
 
         <script>
-            function goToHistory(id)
-            {
-                url = "/equipement?id=" +id;
-                window.location.href =url;
-            }
-            function suppression(id_equipement)
-            {
-                url = "/sql/suppression";
-                var request = new XMLHttpRequest();
-                request.open("POST",url,true);
-                request.onload = function()
-                {
-                    if (this.status >= 200 && this.status < 400) 
-                    {
-                        console.log(this.response);
-                        
-                    }
-                }
-                request.send(JSON.stringify({id_equipement}));
-
-            }
             
             
-           
+          
             function modifier_equipement(button)
                 {
                     let equipement = info_equipements.rows[parseInt(button.value)];

@@ -45,6 +45,49 @@ router.get("/categorie",(req,res)=>{
     });
 });
 
+router.get("/categorie/:id",(req,res)=>{
+  
+    if(!req.session.username)
+    {
+        //l'utilisateur s'est pas déjà loggé
+        res.redirect('/');
+        return;
+    }
+
+   
+    db.query("SELECT * FROM categorie WHERE id_categorie=?",[req.params.id],(error,results)=>{
+        res.send(JSON.stringify(results));
+    })
+})
+
+router.delete("/categorie/:id",(req,res)=>{
+    if(!req.session.username)
+    {
+        //l'utilisateur s'est pas déjà loggé
+        res.redirect('/');
+        return;
+    }
+    db.query("DELETE FROM categorie WHERE id_categorie=?",[req.params.id],(error,results)=>{
+        if(error)
+            res.status(400).send(JSON.stringify(error));
+        else
+            res.send(JSON.stringify(results));
+    })
+})
+
+router.put("/categorie",(req,res)=>{
+    if(!req.session.username)
+    {
+        //l'utilisateur s'est pas déjà loggé
+        res.redirect('/');
+        return;
+    }
+    const {id_categorie,libelle} = req.body;
+    db.query("UPDATE categorie SET ? WHERE ?",[{libelle},{id_categorie}],(error,results) =>{
+        res.send(JSON.stringify(results));
+    })
+})
+
 router.post("/suppression",(req,res)=>{
     if(!req.session.username)
     {
@@ -53,13 +96,14 @@ router.post("/suppression",(req,res)=>{
         return;
     }
     const {id_equipement} = req.body;
+    
     db.query("DELETE FROM equipement WHERE id_equipement=?",[id_equipement],(error,results)=>{
         if(error)
         {
             res.send(error);
         }
         else
-            res.redirect("/liste");
+            res.redirect('/liste');
     });
 });
 

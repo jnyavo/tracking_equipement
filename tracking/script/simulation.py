@@ -9,6 +9,7 @@ SALLES = {
     "D25":[57.453671791904185,-20.24437056046702],
     "Labo":[57.45318631305574,-20.244229636079382]
     }
+URL = "192.168.43.205:4200"
 
 random.seed(datetime.now())
 
@@ -32,17 +33,17 @@ def insert(id,position,salle,connection):
     cursor = connection.cursor()
     try:
         cursor.execute(
-            "UPDATE equipement SET position=?, salle=? WHERE id=?", [position,salle,id]
+            "INSERT INTO equipement_historique (id,position,salle) VALUES (?,?,?)", [id,position,salle]
         )
-        print("UPDATE OK")
+        print("INSERT OK")
     except Exception as err:
-        print("UPDATE ERROR: %s" % err)
+        print("INSERT ERROR: %s" % err)
         return True
 
 
 if __name__ == "__main__":
     try:
-        connection = client.connect("localhost:4200")
+        connection = client.connect(URL)
         print("CONNECT OK")
     except Exception as err:
         print("CONNECT ERROR: %s" % err)

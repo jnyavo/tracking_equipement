@@ -69,7 +69,7 @@ router.get("/me",(req,res)=>{
         else
         {
             console.log(results);
-            res.render('register-admin',{username: req.session.username, form: results[0]});
+            res.render('register-admin',{username: req.session.username, form: results[0],message: req.session.message});
         }
         
     });
@@ -99,6 +99,27 @@ router.get("/liste",(req,res)=>{
     
 });
 
+router.get("/liste-categorie",(req,res)=>{
+    if(!req.session.username)
+    {
+        //l'utilisateur ne s'est pas loggé
+        res.status(401).redirect('/');
+        return;
+    }
+    db.query("SELECT * FROM categorie",(error,results)=>{
+        res.render("liste-categorie",{categories: results});
+    })
+})
+
+router.get("/equipement",(req,res)=>{
+    if(!req.session.username)
+    {
+        //l'utilisateur ne s'est pas loggé
+        res.status(401).redirect('/');
+        return;
+    }
+    res.render("historique",{username: req.session.username, id:req.query.id});
+})
 
 module.exports = router;
 

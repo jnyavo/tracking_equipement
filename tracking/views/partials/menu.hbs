@@ -5,12 +5,17 @@
             </a>
             <ul id="nav-mobile" class="right hide-on-med-and-down">
                 <li>
-                    <a class="white-text" href="#">
-                        <i class="fa fa-user-circle"></i> {{username}} </a>
+                    <a class="divUsername white-text" href="/me">
+                        <i class="fa fa-user-circle"></i> <span class="username">{{username}}</span> </a>
                 </li>
                 <li>
                     <a class="white-text" href="/liste">
                         <i class="fa fa-list"></i> Liste equipements
+                    </a>
+                </li>
+                <li>
+                    <a class="white-text" href="/liste-categorie">
+                        <i class="fas fa-clipboard-list"></i> Liste categories
                     </a>
                 </li>
                 <li>
@@ -26,7 +31,7 @@
                 <!--
                 <li>
                     <a class="white-text" href="#">
-                        <i class="fa fa-book"></i> Nouvel Elève
+                        <i class="fas fa-clipboard-list"></i> Liste categories
                     </a>
                 </li>
                 -->
@@ -51,14 +56,19 @@
     </nav>
     <ul id="menu" class="sidenav blue-grey ligthen-5 white-text">
         <li>
-            <a class="white-text" href="#">
+            <a class="white-text" href="/me">
                 <i class="fa fa-user-circle"></i> {{username}}
             </a>
         </li>
         <div class="divider"></div>
         <li>
-                    <a class="white-text" href="#">
-                        <i class="fa fa-list" href="/liste"></i> Liste equipements
+                    <a class="white-text" href="/liste">
+                        <i class="fa fa-list" ></i> Liste equipements
+                    </a>
+                </li>
+                <li>
+                    <a class="white-text" href="/liste-categorie">
+                        <i class="fas fa-clipboard-list"></i> Liste categories
                     </a>
                 </li>
                 <li>

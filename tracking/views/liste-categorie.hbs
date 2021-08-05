@@ -41,28 +41,28 @@
     </div>
     <!--------------------------------------------------------------------------------------------->
     <div class="container" style="width:80%">
-        <form action="/sql/suppression" method="POST">
+        
             <table class="highlight white-text">
                 <thead>
-                    <th>id_equipement</th>
+                    <th>id_categorie</th>
                     <th>libelle</th>
-                    <th>categorie</th>
+                    
                     
                     <th>Actions</th>
                 </thead>
                 <tbody>
-                    {{#each equipements}}
+                    {{#each categories}}
                         <tr>
-                            <td>{{id_equipement}}</td>
-                            <td>{{libelle_equipement}}</td>
-                            <td>{{libelle_categorie}}</td>
+                            <td>{{id_categorie}}</td>
+                            <td>{{libelle}}</td>
+                            
                             
                             <td>
-                                <a href="/equipement?id={{id_equipement}}" class="btn waves-effect waves-light" >
-                                    <i class="material-icons">history</i>
-                                </a>
+                                <button onclick="modifier_categorie({{id_categorie}})" href="#module-form" class="modal-trigger btn waves-effect waves-light" value="{{id_categorie}}" name="id_equipement" >
+                                    <i class="material-icons">edit</i>
+                                </button>
                                 
-                                <button type="submit" class="btn waves-effect waves-light red" value="{{id_equipement}}" name="id_equipement">
+                                <button onclick="supprimer_categorie({{id_categorie}})" class="btn waves-effect waves-light red" value="{{id_categorie}}" name="id_categorie" >
                                     <i class="material-icons">delete</i>
                                 </button>
                             </td>
@@ -72,7 +72,7 @@
                 </tbody>
                 
             </table>
-        </form>
+        
         
     </div>
 
@@ -88,32 +88,47 @@
         <h4>Modification equipement</h4>
         <div class="divider"></div>
         <br>
-        <form enctype="multipart/form-data" id="insertion_module" name="insertModule" action="modules/insertModule.php"  onsubmit="return test_module();" method="post"  accept-charset="utf-8">
+        
 
         <script>
-            function goToHistory(id)
+
+            function supprimer_categorie(id)
             {
-                url = "/equipement?id=" +id;
-                window.location.href =url;
-            }
-            function suppression(id_equipement)
-            {
-                url = "/sql/suppression";
                 var request = new XMLHttpRequest();
-                request.open("POST",url,true);
-                request.onload = function()
-                {
-                    if (this.status >= 200 && this.status < 400) 
-                    {
-                        console.log(this.response);
+                url = "/sql/categorie/" + id;
+                request.open('DELETE', url, true);
+                request.onload = function () {
+                    console.log(this.response);
+                    if (this.status >= 200 && this.status < 400) {
+                        location.reload();
                         
                     }
-                }
-                request.send(JSON.stringify({id_equipement}));
-
+                };
+                
+                request.send();
             }
-            
-            
+            function modifier_categorie(id)
+            {
+                 
+                var request = new XMLHttpRequest();
+
+                url = "/sql/categorie/" + id;
+                document.getElementById('ins_id').value = id;
+                 document.getElementById('label_id').className += "active";
+                request.open('GET', url, true);
+                request.onload = function () {
+                    console.log(this.response);
+                    if (this.status >= 200 && this.status < 400) {
+                        
+                        categorie = JSON.parse(this.response)[0];
+                        
+                        document.getElementById('nouveau_categorie').value = categorie.libelle;
+                        document.getElementById('label_categorie').className += "active";
+                    }
+                };
+                
+                request.send();
+            }
            
             function modifier_equipement(button)
                 {
@@ -153,13 +168,10 @@
                     </div>  
                     <div class="input-field col s10">
                        
-                            <select name="ins_categorie" id="ins_categorie" onchange="categorie_check(this);">
-                                <option value="-1"></option>
                             
-                            </select>
                             
-                            <label>Categorie </label>
-                            <input class="hide" type="text" name="nouveau_categorie" id="nouveau_categorie" value=""/>
+                            <label id="label_categorie" for="nouveau_categorie">Categorie </label>
+                            <input  type="text" name="nouveau_categorie" id="nouveau_categorie" value=""/>
                             <script>
                             
                                 function categorie_check(select)
@@ -176,33 +188,26 @@
                                     
                                     var request = new XMLHttpRequest();
                                     var ins_id = document.getElementById("ins_id").value;
-                                    var ins_categorie = document.getElementById("ins_categorie").value;
+
                                     var nouveau_categorie = document.getElementById("nouveau_categorie").value;
-                                    var ins_libelle = document.getElementById("ins_libelle").value;
-                                    if (ins_categorie == -1)
-                                        return
-                                    else
-                                    if(ins_categorie == 0)
+                                    
+                                   
                                     if(nouveau_categorie.replace(' ','') == "")
                                         return
-                                    if(ins_libelle.replace(' ','') == "")
-                                        return;
-                                    request.open('POST', '/sql/equipment', true);
+                                    
+                                    request.open('PUT', '/sql/categorie', true);
                                     request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-                                    request.onload = () =>
+                                    request.onload = function ()
                                     {
-                                        
-                                            document.getElementById("ins_id").value = "";
-                                            document.getElementById("ins_categorie").value = "";
-                                            document.getElementById("nouveau_categorie").value = "";
-                                            document.getElementById("ins_libelle").value = "";
-                                            $("#ins_categorie").val(-1).change();
-                                            $('select').formSelect();
-                                            
+                                            console.log(this.reponse);
+                                            if (this.status >= 200 && this.status < 400) 
+                                            {
+                                                location.reload();
+                                            }
                                     
                                         
                                     };
-                                    request.send(JSON.stringify({ins_id,ins_categorie,nouveau_categorie,ins_libelle}));
+                                    request.send(JSON.stringify({id_categorie:ins_id,libelle:nouveau_categorie}));
                                 }
                                 
                                 
@@ -210,13 +215,10 @@
                             </script>
                             
                     </div>
-                    <div class="input-field col s10">
-                        <label id="label_libelle" for="ins_libelle">Libellé</label>
-                        <input type="text" id="ins_libelle" name="ins_libelle">
-                    </div>
+                    
                 </div>
             <div class="row">
-                <button name="submit" type="submit" class="btn waves-effect waves-light grey-blue" onclick="send();" >
+                <button class="btn waves-effect waves-light grey-blue" onclick="send();" >
                     Confirmer
                     
                 </button>
@@ -225,7 +227,7 @@
                
                 
             </div>
-        </form>
+        
         
     </div>
    

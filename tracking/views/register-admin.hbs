@@ -25,10 +25,10 @@
         <div class="row">
          
 <div class="container">
-    <h3 class="center-align white-text">Nouvel Admin</h3>
+    <h3 class="center-align white-text">{{#if form }} Mon Compte {{else}} Nouvel Admin {{/if}}</h3>
     <br>
     <div class="row">
-    <form class="col s12"  action="/auth/register" method="post" onsubmit="return test();">
+    <form class="col s12" {{#if form}} action="/auth/modify" {{else}} action="/auth/register" {{/if}} method="post" onsubmit="return test();">
     
     <!-- Script pour eviter les cases vides et invalides -->
         <script>
@@ -40,12 +40,19 @@
                   check = false;
                 };
                 
-                if (document.getElementById('password').value.replace(' ', '') == '') {
+               
+                {{#if form}}
+                    if (document.getElementById('oldpassword').value.replace(' ', '') == '') {
+                        document.getElementById('oldpassword').className = 'validate invalid';
+                        check = false;
+                    };
+                {{else}}
+                    if (document.getElementById('password').value.replace(' ', '') == '') {
 
-                  document.getElementById('password').className = 'validate invalid';
-                  check = false;
-                }
-                  
+                        document.getElementById('password').className = 'validate invalid';
+                        check = false;
+                    }
+                {{/if}}
                 
                 
                 if (document.getElementById('password').value != document.getElementById('confirm').value) {
@@ -98,10 +105,18 @@
                     <label for="email">Email</label>
                 </div>
             </div>
+            {{#if form}}
+            <div class="row">
+                <div class="input-field col s12">
+                    <input id="oldpassword" name="oldpassword" type="password" class="validate white-text" value="">
+                    <label for="oldpassword">Mot de passe</label>
+                </div>
+            </div>
+            {{/if}}
             <div class="row">
                 <div class="input-field col s6">
                     <input id="password" name="password" type="password" class="validate white-text">
-                    <label for="password">Mot de passe</label>
+                    <label for="password">Nouveau mot de passe</label>
                 </div>
                 <div class="input-field col s6">
                     <input id="confirm" name="cpassword" type="password" class="validate white-text">
